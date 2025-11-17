@@ -10,4 +10,5 @@
     <item name="btnEventosSanitarios" type="id" />
     <item name="btnGastos" type="id" />
     <item name="btnAlimentacion" type="id" />
+    <item name="cbAplicarPorRaza" type="id" />
 </resources>

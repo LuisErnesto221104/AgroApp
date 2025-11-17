@@ -1,10 +1,11 @@
 package com.example.agroapp;
 
 import android.os.Bundle;
+import android.text.Html;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
-public class RecomendacionesActivity extends AppCompatActivity {
+public class RecomendacionesActivity extends BaseActivity {
     
     private TextView tvRecomendaciones;
     
@@ -22,56 +23,61 @@ public class RecomendacionesActivity extends AppCompatActivity {
     }
     
     private void cargarRecomendaciones() {
-        StringBuilder recomendaciones = new StringBuilder();
+        String htmlContent = 
+            "<h2 style='color:#4CAF50; margin-bottom:8px;'>🐄 GANADO BOVINO DE CARNE</h2>" +
+            "<p><b>• Forraje:</b> 2-3% del peso corporal diario<br/>" +
+            "<b>• Concentrado:</b> 0.5-1% del peso corporal<br/>" +
+            "<b>• Agua:</b> 30-50 litros por día<br/>" +
+            "<b>• Sal mineral:</b> 30-50g por día</p>" +
+            
+            "<hr style='border:1px solid #E0E0E0; margin:12px 0;'/>" +
+            
+            "<h2 style='color:#2196F3; margin-bottom:8px;'>🥛 GANADO LECHERO</h2>" +
+            "<p><b>• Forraje verde:</b> 40-50 kg por día<br/>" +
+            "<b>• Concentrado:</b> 1 kg por cada 2.5 litros de leche<br/>" +
+            "<b>• Agua:</b> 60-80 litros por día<br/>" +
+            "<b>• Sal mineral:</b> 50-80g por día</p>" +
+            
+            "<hr style='border:1px solid #E0E0E0; margin:12px 0;'/>" +
+            
+            "<h2 style='color:#FF9800; margin-bottom:8px;'>🍼 TERNEROS (0-6 MESES)</h2>" +
+            "<p><b>• Calostro:</b> Primeras 6 horas de vida<br/>" +
+            "<b>• Leche:</b> 4-6 litros diarios<br/>" +
+            "<b>• Concentrado iniciador:</b> A partir del día 7<br/>" +
+            "<b>• Forraje:</b> Introducir gradualmente</p>" +
+            
+            "<hr style='border:1px solid #E0E0E0; margin:12px 0;'/>" +
+            
+            "<h2 style='color:#E91E63; margin-bottom:8px;'>💊 MANEJO SANITARIO</h2>" +
+            "<p><b>• Desparasitación:</b> Cada 3-4 meses<br/>" +
+            "<b>• Vacunas:</b> Según calendario oficial<br/>" +
+            "<b>• Vitaminas:</b> Aplicar cada 2-3 meses<br/>" +
+            "<b>• Revisión veterinaria:</b> Cada 6 meses</p>" +
+            
+            "<hr style='border:1px solid #E0E0E0; margin:12px 0;'/>" +
+            
+            "<h2 style='color:#009688; margin-bottom:8px;'>🌡️ CONDICIONES AMBIENTALES</h2>" +
+            "<p><b>• Sombra:</b> Adecuada en época de calor<br/>" +
+            "<b>• Agua:</b> Limpia y fresca disponible<br/>" +
+            "<b>• Espacio:</b> 10-15 m² por animal<br/>" +
+            "<b>• Ventilación:</b> Apropiada en corrales</p>" +
+            
+            "<hr style='border:1px solid #E0E0E0; margin:12px 0;'/>" +
+            
+            "<h2 style='color:#9C27B0; margin-bottom:8px;'>📊 ALIMENTACIÓN POR ETAPA</h2>" +
+            "<p><b>• Gestación:</b> Incrementar 20% nutrientes<br/>" +
+            "<b>• Lactancia:</b> Máxima calidad nutritiva<br/>" +
+            "<b>• Engorda:</b> Alto contenido energético<br/>" +
+            "<b>• Mantenimiento:</b> Dieta balanceada básica</p>" +
+            
+            "<hr style='border:1px solid #E0E0E0; margin:12px 0;'/>" +
+            
+            "<p style='background-color:#FFF3CD; padding:12px; border-radius:4px; color:#856404; margin-top:12px;'>" +
+            "<b>⚠️ NOTA IMPORTANTE:</b><br/>" +
+            "Estas son recomendaciones generales. Consulte con un veterinario o zootecnista " +
+            "para un plan nutricional específico según las características de su ganado y condiciones locales.</p>";
         
-        recomendaciones.append("RECOMENDACIONES NUTRICIONALES PARA GANADO\n\n");
-        
-        recomendaciones.append("═══════════════════════════════════\n\n");
-        
-        recomendaciones.append("1. GANADO BOVINO DE CARNE\n\n");
-        recomendaciones.append("• Forraje: 2-3% del peso corporal diario\n");
-        recomendaciones.append("• Concentrado: 0.5-1% del peso corporal\n");
-        recomendaciones.append("• Agua: 30-50 litros por día\n");
-        recomendaciones.append("• Sal mineral: 30-50g por día\n\n");
-        
-        recomendaciones.append("2. GANADO LECHERO\n\n");
-        recomendaciones.append("• Forraje verde: 40-50 kg por día\n");
-        recomendaciones.append("• Concentrado: 1 kg por cada 2.5 litros de leche\n");
-        recomendaciones.append("• Agua: 60-80 litros por día\n");
-        recomendaciones.append("• Sal mineral: 50-80g por día\n\n");
-        
-        recomendaciones.append("3. TERNEROS (0-6 MESES)\n\n");
-        recomendaciones.append("• Calostro: Primeras 6 horas de vida\n");
-        recomendaciones.append("• Leche: 4-6 litros diarios\n");
-        recomendaciones.append("• Concentrado iniciador: A partir del día 7\n");
-        recomendaciones.append("• Forraje: Introducir gradualmente\n\n");
-        
-        recomendaciones.append("4. MANEJO SANITARIO\n\n");
-        recomendaciones.append("• Desparasitación: Cada 3-4 meses\n");
-        recomendaciones.append("• Vacunas: Según calendario oficial\n");
-        recomendaciones.append("• Vitaminas: Aplicar cada 2-3 meses\n");
-        recomendaciones.append("• Revisión veterinaria: Cada 6 meses\n\n");
-        
-        recomendaciones.append("5. CONDICIONES AMBIENTALES\n\n");
-        recomendaciones.append("• Sombra adecuada en época de calor\n");
-        recomendaciones.append("• Agua limpia y fresca disponible\n");
-        recomendaciones.append("• Espacio mínimo: 10-15 m² por animal\n");
-        recomendaciones.append("• Ventilación apropiada en corrales\n\n");
-        
-        recomendaciones.append("6. ALIMENTACIÓN POR ETAPA\n\n");
-        recomendaciones.append("• Gestación: Incrementar 20% nutrientes\n");
-        recomendaciones.append("• Lactancia: Máxima calidad nutritiva\n");
-        recomendaciones.append("• Engorda: Alto contenido energético\n");
-        recomendaciones.append("• Mantenimiento: Dieta balanceada básica\n\n");
-        
-        recomendaciones.append("═══════════════════════════════════\n\n");
-        
-        recomendaciones.append("NOTA: Estas son recomendaciones generales. ");
-        recomendaciones.append("Consulte con un veterinario o zootecnista para ");
-        recomendaciones.append("un plan nutricional específico según las características ");
-        recomendaciones.append("de su ganado y condiciones locales.");
-        
-        tvRecomendaciones.setText(recomendaciones.toString());
+        tvRecomendaciones.setText(Html.fromHtml(htmlContent, Html.FROM_HTML_MODE_LEGACY));
     }
     
     @Override

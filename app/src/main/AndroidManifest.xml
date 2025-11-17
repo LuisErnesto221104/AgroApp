@@ -38,6 +38,7 @@
         <activity android:name=".HistorialClinicoActivity" />
         <activity android:name=".GastosActivity" />
         <activity android:name=".AlimentacionActivity" />
+        <activity android:name=".RegistroComprasActivity" />
         <activity android:name=".ReportesActivity" />
         <activity android:name=".RecomendacionesActivity" />
         

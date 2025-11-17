@@ -8,17 +8,19 @@ public class Alimentacion {
     private String unidad;
     private String fecha;
     private String observaciones;
+    private double costo;
     
     public Alimentacion() {}
     
     public Alimentacion(int id, int animalId, String tipoAlimento, double cantidad,
-                       String unidad, String fecha, String observaciones) {
+                       String unidad, String fecha, double costo, String observaciones) {
         this.id = id;
         this.animalId = animalId;
         this.tipoAlimento = tipoAlimento;
         this.cantidad = cantidad;
         this.unidad = unidad;
         this.fecha = fecha;
+        this.costo = costo;
         this.observaciones = observaciones;
     }
     
@@ -76,5 +78,13 @@ public class Alimentacion {
     
     public void setObservaciones(String observaciones) {
         this.observaciones = observaciones;
+    }
+    
+    public double getCosto() {
+        return costo;
+    }
+    
+    public void setCosto(double costo) {
+        this.costo = costo;
     }
 }

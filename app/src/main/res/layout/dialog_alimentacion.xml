@@ -31,6 +31,25 @@
             android:layout_height="48dp"
             android:layout_marginBottom="12dp"/>
 
+        <CheckBox
+            android:id="@+id/cbSeleccionarPorRaza"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Seleccionar por raza(s)"
+            android:layout_marginBottom="8dp"/>
+
+        <LinearLayout
+            android:id="@+id/layoutRazas"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone"
+            android:padding="8dp"
+            android:background="@android:drawable/dialog_holo_light_frame"
+            android:layout_marginBottom="12dp">
+            <!-- CheckBoxes de razas se agregan dinámicamente -->
+        </LinearLayout>
+
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -81,6 +100,21 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Seleccionar Fecha"
+            android:layout_marginBottom="12dp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Costo"
+            android:textStyle="bold"/>
+
+        <EditText
+            android:id="@+id/etCosto"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="0.00"
+            android:inputType="numberDecimal"
+            android:padding="12dp"
             android:layout_marginBottom="12dp"/>
             
         <TextView

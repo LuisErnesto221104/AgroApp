@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
 import android.os.Bundle;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
@@ -15,19 +16,17 @@ import com.example.agroapp.adapters.HistorialClinicoAdapter;
 import com.example.agroapp.dao.HistorialClinicoDAO;
 import com.example.agroapp.database.DatabaseHelper;
 import com.example.agroapp.models.HistorialClinico;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
-public class HistorialClinicoActivity extends AppCompatActivity {
+public class HistorialClinicoActivity extends BaseActivity {
     
     private RecyclerView recyclerView;
     private HistorialClinicoAdapter adapter;
     private HistorialClinicoDAO historialDAO;
     private List<HistorialClinico> historialList;
-    private FloatingActionButton fabNuevo;
     private int animalId;
     
     @SuppressLint("MissingInflatedId")
@@ -36,22 +35,24 @@ public class HistorialClinicoActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_historial_clinico);
         
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setTitle("Historial Clínico");
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setTitle("Historial Clínico");
+        }
         
         DatabaseHelper dbHelper = DatabaseHelper.getInstance(this);
         historialDAO = new HistorialClinicoDAO(dbHelper);
         
         animalId = getIntent().getIntExtra("animalId", -1);
         
-        recyclerView = findViewById(R.id.recyclerViewHistorial);
-        fabNuevo = findViewById(R.id.fabNuevoHistorial);
+        recyclerView = findViewById(R.id.recyclerHistorial);
+        Button btnNuevo = findViewById(R.id.btnNuevoRegistro);
         
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         
         cargarHistorial();
         
-        fabNuevo.setOnClickListener(v -> mostrarDialogoNuevoRegistro());
+        btnNuevo.setOnClickListener(v -> mostrarDialogoNuevoRegistro());
     }
     
     private void cargarHistorial() {

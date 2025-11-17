@@ -7,7 +7,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class DatabaseHelper extends SQLiteOpenHelper {
     
     private static final String DATABASE_NAME = "AgroApp.db";
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
     
     // Tabla Usuarios
     public static final String TABLE_USUARIOS = "usuarios";
@@ -36,12 +36,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String TABLE_CALENDARIO_SANITARIO = "calendario_sanitario";
     public static final String COL_CALENDARIO_ID = "id";
     public static final String COL_CALENDARIO_ANIMAL_ID = "animal_id";
+    public static final String COL_CALENDARIO_RAZA = "raza";
     public static final String COL_CALENDARIO_TIPO = "tipo";
     public static final String COL_CALENDARIO_FECHA_PROGRAMADA = "fecha_programada";
     public static final String COL_CALENDARIO_FECHA_REALIZADA = "fecha_realizada";
     public static final String COL_CALENDARIO_DESCRIPCION = "descripcion";
     public static final String COL_CALENDARIO_RECORDATORIO = "recordatorio";
     public static final String COL_CALENDARIO_ESTADO = "estado";
+    public static final String COL_CALENDARIO_HORA = "hora_recordatorio";
+    public static final String COL_CALENDARIO_COSTO = "costo";
     
     // Tabla Historial Clínico
     public static final String TABLE_HISTORIAL_CLINICO = "historial_clinico";
@@ -58,6 +61,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String TABLE_GASTOS = "gastos";
     public static final String COL_GASTO_ID = "id";
     public static final String COL_GASTO_ANIMAL_ID = "animal_id";
+    public static final String COL_GASTO_RAZA = "raza";
     public static final String COL_GASTO_TIPO = "tipo";
     public static final String COL_GASTO_CONCEPTO = "concepto";
     public static final String COL_GASTO_MONTO = "monto";
@@ -73,6 +77,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String COL_ALIMENTACION_UNIDAD = "unidad";
     public static final String COL_ALIMENTACION_FECHA = "fecha";
     public static final String COL_ALIMENTACION_OBSERVACIONES = "observaciones";
+    public static final String COL_ALIMENTACION_COSTO = "costo";
     
     private static DatabaseHelper instance;
     
@@ -118,12 +123,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         String createCalendario = "CREATE TABLE " + TABLE_CALENDARIO_SANITARIO + " (" +
                 COL_CALENDARIO_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 COL_CALENDARIO_ANIMAL_ID + " INTEGER, " +
+                COL_CALENDARIO_RAZA + " TEXT, " +
                 COL_CALENDARIO_TIPO + " TEXT, " +
                 COL_CALENDARIO_FECHA_PROGRAMADA + " TEXT, " +
                 COL_CALENDARIO_FECHA_REALIZADA + " TEXT, " +
                 COL_CALENDARIO_DESCRIPCION + " TEXT, " +
                 COL_CALENDARIO_RECORDATORIO + " INTEGER, " +
                 COL_CALENDARIO_ESTADO + " TEXT, " +
+                COL_CALENDARIO_HORA + " TEXT, " +
+                COL_CALENDARIO_COSTO + " REAL, " +
                 "FOREIGN KEY(" + COL_CALENDARIO_ANIMAL_ID + ") REFERENCES " + 
                 TABLE_ANIMALES + "(" + COL_ANIMAL_ID + ") ON DELETE CASCADE)";
         db.execSQL(createCalendario);
@@ -146,6 +154,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         String createGastos = "CREATE TABLE " + TABLE_GASTOS + " (" +
                 COL_GASTO_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 COL_GASTO_ANIMAL_ID + " INTEGER, " +
+                COL_GASTO_RAZA + " TEXT, " +
                 COL_GASTO_TIPO + " TEXT, " +
                 COL_GASTO_CONCEPTO + " TEXT, " +
                 COL_GASTO_MONTO + " REAL, " +
@@ -164,6 +173,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COL_ALIMENTACION_UNIDAD + " TEXT, " +
                 COL_ALIMENTACION_FECHA + " TEXT, " +
                 COL_ALIMENTACION_OBSERVACIONES + " TEXT, " +
+                COL_ALIMENTACION_COSTO + " REAL, " +
                 "FOREIGN KEY(" + COL_ALIMENTACION_ANIMAL_ID + ") REFERENCES " + 
                 TABLE_ANIMALES + "(" + COL_ANIMAL_ID + ") ON DELETE CASCADE)";
         db.execSQL(createAlimentacion);
@@ -176,13 +186,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_ALIMENTACION);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_GASTOS);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_HISTORIAL_CLINICO);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_CALENDARIO_SANITARIO);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_ANIMALES);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_USUARIOS);
-        onCreate(db);
+        if (oldVersion < 2) {
+            // Migración de versión 1 a 2: agregar columna raza a calendario_sanitario y gastos
+            db.execSQL("ALTER TABLE " + TABLE_CALENDARIO_SANITARIO + " ADD COLUMN " + COL_CALENDARIO_RAZA + " TEXT");
+            db.execSQL("ALTER TABLE " + TABLE_GASTOS + " ADD COLUMN " + COL_GASTO_RAZA + " TEXT");
+        }
     }
     
     @Override

@@ -24,12 +24,13 @@ import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends BaseActivity {
     
     private TextView tvWelcome, tvAnimalesActivos, tvAnimalesSanos, tvAnimalesVendidos, tvAnimalesMuertos;
     private TextView tvVacunasPendientes;
     private CardView cardAnimales, cardRegistroAnimal, cardCalendario, cardGastos, 
-                     cardReportes, cardRecomendaciones, cardAlimentacion, cardVacunaAlert;
+                     cardReportes, cardRecomendaciones, cardAlimentacion, cardVacunaAlert,
+                     cardRegistroCompras;
     private TextView badgeCalendario;
     private ImageView btnLogout;
     
@@ -71,6 +72,7 @@ public class MainActivity extends AppCompatActivity {
         cardReportes = findViewById(R.id.cardReportes);
         cardRecomendaciones = findViewById(R.id.cardRecomendaciones);
         cardAlimentacion = findViewById(R.id.cardAlimentacion);
+        cardRegistroCompras = findViewById(R.id.cardRegistroCompras);
         
         // Obtener nombre de usuario
         SharedPreferences prefs = getSharedPreferences("AgroAppPrefs", MODE_PRIVATE);
@@ -111,6 +113,10 @@ public class MainActivity extends AppCompatActivity {
         
         cardRecomendaciones.setOnClickListener(v -> {
             startActivity(new Intent(this, RecomendacionesActivity.class));
+        });
+        
+        cardRegistroCompras.setOnClickListener(v -> {
+            startActivity(new Intent(this, RegistroComprasActivity.class));
         });
     }
     

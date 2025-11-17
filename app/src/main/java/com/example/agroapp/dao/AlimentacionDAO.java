@@ -24,6 +24,7 @@ public class AlimentacionDAO {
         values.put(DatabaseHelper.COL_ALIMENTACION_CANTIDAD, alimentacion.getCantidad());
         values.put(DatabaseHelper.COL_ALIMENTACION_UNIDAD, alimentacion.getUnidad());
         values.put(DatabaseHelper.COL_ALIMENTACION_FECHA, alimentacion.getFecha());
+        values.put(DatabaseHelper.COL_ALIMENTACION_COSTO, alimentacion.getCosto());
         values.put(DatabaseHelper.COL_ALIMENTACION_OBSERVACIONES, alimentacion.getObservaciones());
         
         return db.insert(DatabaseHelper.TABLE_ALIMENTACION, null, values);
@@ -38,6 +39,7 @@ public class AlimentacionDAO {
         values.put(DatabaseHelper.COL_ALIMENTACION_CANTIDAD, alimentacion.getCantidad());
         values.put(DatabaseHelper.COL_ALIMENTACION_UNIDAD, alimentacion.getUnidad());
         values.put(DatabaseHelper.COL_ALIMENTACION_FECHA, alimentacion.getFecha());
+        values.put(DatabaseHelper.COL_ALIMENTACION_COSTO, alimentacion.getCosto());
         values.put(DatabaseHelper.COL_ALIMENTACION_OBSERVACIONES, alimentacion.getObservaciones());
         
         return db.update(DatabaseHelper.TABLE_ALIMENTACION, values,
@@ -83,6 +85,7 @@ public class AlimentacionDAO {
             cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ALIMENTACION_CANTIDAD)),
             cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ALIMENTACION_UNIDAD)),
             cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ALIMENTACION_FECHA)),
+            cursor.getDouble(cursor.getColumnIndex(DatabaseHelper.COL_ALIMENTACION_COSTO) != -1 ? cursor.getColumnIndex(DatabaseHelper.COL_ALIMENTACION_COSTO) : 0),
             cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ALIMENTACION_OBSERVACIONES))
         );
     }

@@ -38,7 +38,32 @@ public class UsuarioDAO {
         return usuario;
     }
     
-    public long insertarUsuario(Usuario usuario) {
+    public Usuario obtenerPorUsername(String username) {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        Usuario usuario = null;
+        
+        Cursor cursor = db.query(
+            DatabaseHelper.TABLE_USUARIOS,
+            null,
+            DatabaseHelper.COL_USUARIO_USERNAME + "=?",
+            new String[]{username},
+            null, null, null
+        );
+        
+        if (cursor != null && cursor.moveToFirst()) {
+            usuario = new Usuario(
+                cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_ID)),
+                cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_USERNAME)),
+                cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_PASSWORD)),
+                cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_NOMBRE))
+            );
+            cursor.close();
+        }
+        
+        return usuario;
+    }
+    
+    public long insertar(Usuario usuario) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
         
@@ -47,5 +72,9 @@ public class UsuarioDAO {
         values.put(DatabaseHelper.COL_USUARIO_NOMBRE, usuario.getNombre());
         
         return db.insert(DatabaseHelper.TABLE_USUARIOS, null, values);
+    }
+    
+    public long insertarUsuario(Usuario usuario) {
+        return insertar(usuario);
     }
 }

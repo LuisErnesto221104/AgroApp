@@ -19,7 +19,12 @@ public class GastoDAO {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
         
-        values.put(DatabaseHelper.COL_GASTO_ANIMAL_ID, gasto.getAnimalId());
+        if (gasto.getAnimalId() > 0) {
+            values.put(DatabaseHelper.COL_GASTO_ANIMAL_ID, gasto.getAnimalId());
+        }
+        if (gasto.getRaza() != null && !gasto.getRaza().isEmpty()) {
+            values.put(DatabaseHelper.COL_GASTO_RAZA, gasto.getRaza());
+        }
         values.put(DatabaseHelper.COL_GASTO_TIPO, gasto.getTipo());
         values.put(DatabaseHelper.COL_GASTO_CONCEPTO, gasto.getConcepto());
         values.put(DatabaseHelper.COL_GASTO_MONTO, gasto.getMonto());
@@ -33,7 +38,12 @@ public class GastoDAO {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
         
-        values.put(DatabaseHelper.COL_GASTO_ANIMAL_ID, gasto.getAnimalId());
+        if (gasto.getAnimalId() > 0) {
+            values.put(DatabaseHelper.COL_GASTO_ANIMAL_ID, gasto.getAnimalId());
+        }
+        if (gasto.getRaza() != null && !gasto.getRaza().isEmpty()) {
+            values.put(DatabaseHelper.COL_GASTO_RAZA, gasto.getRaza());
+        }
         values.put(DatabaseHelper.COL_GASTO_TIPO, gasto.getTipo());
         values.put(DatabaseHelper.COL_GASTO_CONCEPTO, gasto.getConcepto());
         values.put(DatabaseHelper.COL_GASTO_MONTO, gasto.getMonto());
@@ -131,7 +141,7 @@ public class GastoDAO {
     }
     
     private Gasto cursorToGasto(Cursor cursor) {
-        return new Gasto(
+        Gasto gasto = new Gasto(
             cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_GASTO_ID)),
             cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_GASTO_ANIMAL_ID)),
             cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_GASTO_TIPO)),
@@ -140,5 +150,12 @@ public class GastoDAO {
             cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_GASTO_FECHA)),
             cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_GASTO_OBSERVACIONES))
         );
+        
+        int razaIndex = cursor.getColumnIndex(DatabaseHelper.COL_GASTO_RAZA);
+        if (razaIndex != -1) {
+            gasto.setRaza(cursor.getString(razaIndex));
+        }
+        
+        return gasto;
     }
 }

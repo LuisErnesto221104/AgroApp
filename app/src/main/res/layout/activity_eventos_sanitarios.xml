@@ -5,6 +5,15 @@
     android:orientation="vertical"
     android:background="@color/background">
 
+    <Button
+        android:id="@+id/btnNuevoEvento"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:text="+ Nuevo Evento Sanitario"
+        android:textColor="@color/white"
+        android:backgroundTint="@color/primary"/>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerEventos"
         android:layout_width="match_parent"

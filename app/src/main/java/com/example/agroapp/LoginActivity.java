@@ -3,18 +3,18 @@ package com.example.agroapp;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
+import com.google.android.material.textfield.TextInputEditText;
 import com.example.agroapp.dao.UsuarioDAO;
 import com.example.agroapp.database.DatabaseHelper;
 import com.example.agroapp.models.Usuario;
 
 public class LoginActivity extends AppCompatActivity {
     
-    private EditText etUsername, etPassword;
-    private Button btnLogin;
+    private TextInputEditText etUsuario, etPassword;
+    private CardView btnLogin;
     private DatabaseHelper dbHelper;
     private UsuarioDAO usuarioDAO;
     
@@ -26,7 +26,7 @@ public class LoginActivity extends AppCompatActivity {
         dbHelper = DatabaseHelper.getInstance(this);
         usuarioDAO = new UsuarioDAO(dbHelper);
         
-        etUsername = findViewById(R.id.etUsername);
+        etUsuario = findViewById(R.id.etUsuario);
         etPassword = findViewById(R.id.etPassword);
         btnLogin = findViewById(R.id.btnLogin);
         
@@ -40,7 +40,7 @@ public class LoginActivity extends AppCompatActivity {
     }
     
     private void intentarLogin() {
-        String username = etUsername.getText().toString().trim();
+        String username = etUsuario.getText().toString().trim();
         String password = etPassword.getText().toString().trim();
         
         if (username.isEmpty() || password.isEmpty()) {
@@ -48,22 +48,50 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
         
+        // Intentar validar usuario existente
         Usuario usuario = usuarioDAO.validarUsuario(username, password);
         
         if (usuario != null) {
-            // Guardar sesión
-            SharedPreferences prefs = getSharedPreferences("AgroAppPrefs", MODE_PRIVATE);
-            SharedPreferences.Editor editor = prefs.edit();
-            editor.putBoolean("isLoggedIn", true);
-            editor.putInt("userId", usuario.getId());
-            editor.putString("userName", usuario.getNombre());
-            editor.apply();
-            
+            // Usuario existe y credenciales correctas
+            guardarSesion(usuario);
             Toast.makeText(this, "Bienvenido " + usuario.getNombre(), Toast.LENGTH_SHORT).show();
             irAMainActivity();
         } else {
-            Toast.makeText(this, "Usuario o contraseña incorrectos", Toast.LENGTH_SHORT).show();
+            // Verificar si el usuario existe pero la contraseña es incorrecta
+            Usuario usuarioExistente = usuarioDAO.obtenerPorUsername(username);
+            
+            if (usuarioExistente != null) {
+                // Usuario existe pero contraseña incorrecta
+                Toast.makeText(this, "Contraseña incorrecta", Toast.LENGTH_SHORT).show();
+            } else {
+                // Usuario no existe - Crear cuenta automáticamente
+                Usuario nuevoUsuario = new Usuario();
+                nuevoUsuario.setUsername(username);
+                nuevoUsuario.setPassword(password);
+                nuevoUsuario.setNombre(username); // Usar username como nombre inicial
+                
+                long id = usuarioDAO.insertar(nuevoUsuario);
+                
+                if (id > 0) {
+                    nuevoUsuario.setId((int) id);
+                    guardarSesion(nuevoUsuario);
+                    Toast.makeText(this, "¡Cuenta creada! Bienvenido " + nuevoUsuario.getNombre(), 
+                            Toast.LENGTH_LONG).show();
+                    irAMainActivity();
+                } else {
+                    Toast.makeText(this, "Error al crear la cuenta", Toast.LENGTH_SHORT).show();
+                }
+            }
         }
+    }
+    
+    private void guardarSesion(Usuario usuario) {
+        SharedPreferences prefs = getSharedPreferences("AgroAppPrefs", MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putBoolean("isLoggedIn", true);
+        editor.putInt("userId", usuario.getId());
+        editor.putString("userName", usuario.getNombre());
+        editor.apply();
     }
     
     private void irAMainActivity() {

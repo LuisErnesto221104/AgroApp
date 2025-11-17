@@ -2,8 +2,12 @@ package com.example.agroapp;
 
 import android.app.DatePickerDialog;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
@@ -16,14 +20,17 @@ import com.example.agroapp.dao.AnimalDAO;
 import com.example.agroapp.database.DatabaseHelper;
 import com.example.agroapp.models.Alimentacion;
 import com.example.agroapp.models.Animal;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-public class AlimentacionActivity extends AppCompatActivity {
+public class AlimentacionActivity extends BaseActivity {
     
     private RecyclerView recyclerView;
     private AlimentacionDAO alimentacionDAO;
@@ -45,13 +52,13 @@ public class AlimentacionActivity extends AppCompatActivity {
         animalIdFiltro = getIntent().getIntExtra("animalId", -1);
         
         recyclerView = findViewById(R.id.recyclerAlimentacion);
-        FloatingActionButton fabNuevo = findViewById(R.id.fabNuevoRegistro);
+        Button btnNuevo = findViewById(R.id.btnNuevoRegistro);
         
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         
         cargarRegistros();
         
-        fabNuevo.setOnClickListener(v -> mostrarDialogoNuevoRegistro());
+        btnNuevo.setOnClickListener(v -> mostrarDialogoNuevoRegistro());
     }
     
     private void cargarRegistros() {
@@ -75,9 +82,12 @@ public class AlimentacionActivity extends AppCompatActivity {
         builder.setView(dialogView);
         
         Spinner spinnerAnimal = dialogView.findViewById(R.id.spinnerAnimal);
+        CheckBox cbSeleccionarPorRaza = dialogView.findViewById(R.id.cbSeleccionarPorRaza);
+        LinearLayout layoutRazas = dialogView.findViewById(R.id.layoutRazas);
         Spinner spinnerTipo = dialogView.findViewById(R.id.spinnerTipoAlimento);
         Spinner spinnerUnidad = dialogView.findViewById(R.id.spinnerUnidad);
         EditText etCantidad = dialogView.findViewById(R.id.etCantidad);
+        EditText etCosto = dialogView.findViewById(R.id.etCosto);
         android.widget.Button btnFecha = dialogView.findViewById(R.id.btnFecha);
         EditText etObservaciones = dialogView.findViewById(R.id.etObservaciones);
         
@@ -85,12 +95,37 @@ public class AlimentacionActivity extends AppCompatActivity {
         List<Animal> animales = animalDAO.obtenerTodosLosAnimales();
         String[] nombresAnimales = new String[animales.size()];
         for (int i = 0; i < animales.size(); i++) {
-            nombresAnimales[i] = animales.get(i).getNumeroArete() + " - " + 
-                                 (animales.get(i).getNombre() != null ? animales.get(i).getNombre() : "Sin nombre");
+            nombresAnimales[i] = animales.get(i).getNumeroArete() + " - " + animales.get(i).getRaza();
         }
         ArrayAdapter<String> animalAdapter = new ArrayAdapter<>(this,
             android.R.layout.simple_spinner_dropdown_item, nombresAnimales);
         spinnerAnimal.setAdapter(animalAdapter);
+        
+        // Obtener razas únicas
+        Set<String> razasSet = new HashSet<>();
+        for (Animal animal : animales) {
+            razasSet.add(animal.getRaza());
+        }
+        List<String> razasList = new ArrayList<>(razasSet);
+        List<CheckBox> checkBoxesRazas = new ArrayList<>();
+        
+        for (String raza : razasList) {
+            CheckBox cb = new CheckBox(this);
+            cb.setText(raza);
+            checkBoxesRazas.add(cb);
+            layoutRazas.addView(cb);
+        }
+        
+        // Toggle entre selección individual y por raza
+        cbSeleccionarPorRaza.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                spinnerAnimal.setVisibility(View.GONE);
+                layoutRazas.setVisibility(View.VISIBLE);
+            } else {
+                spinnerAnimal.setVisibility(View.VISIBLE);
+                layoutRazas.setVisibility(View.GONE);
+            }
+        });
         
         // Configurar spinner de tipos
         String[] tipos = {"Pasto", "Forraje", "Concentrado", "Grano", "Suplemento", "Otro"};
@@ -127,27 +162,80 @@ public class AlimentacionActivity extends AppCompatActivity {
         
         builder.setTitle("Nuevo Registro de Alimentación")
             .setPositiveButton("Guardar", (dialog, which) -> {
-                if (!animales.isEmpty()) {
-                    try {
-                        Alimentacion alimentacion = new Alimentacion();
-                    alimentacion.setAnimalId(animales.get(spinnerAnimal.getSelectedItemPosition()).getId());
-                    alimentacion.setTipoAlimento(spinnerTipo.getSelectedItem().toString());
-                    alimentacion.setCantidad(Double.parseDouble(etCantidad.getText().toString()));
-                    alimentacion.setUnidad(spinnerUnidad.getSelectedItem().toString());
-                    alimentacion.setFecha(fechaSeleccionada[0]);
-                        alimentacion.setObservaciones(etObservaciones.getText().toString());
-                        
-                        alimentacionDAO.insertarAlimentacion(alimentacion);
-                        Toast.makeText(this, "Registro guardado", Toast.LENGTH_SHORT).show();
-                        cargarRegistros();
-                    } catch (NumberFormatException e) {
-                        Toast.makeText(this, "Cantidad inválida", Toast.LENGTH_SHORT).show();
+                try {
+                    double cantidad = Double.parseDouble(etCantidad.getText().toString());
+                    double costo = 0;
+                    String costoStr = etCosto.getText().toString().trim();
+                    if (!costoStr.isEmpty()) {
+                        costo = Double.parseDouble(costoStr);
                     }
+                    
+                    if (cbSeleccionarPorRaza.isChecked()) {
+                        // Guardar para todos los animales de las razas seleccionadas
+                        List<String> razasSeleccionadas = new ArrayList<>();
+                        for (CheckBox cb : checkBoxesRazas) {
+                            if (cb.isChecked()) {
+                                razasSeleccionadas.add(cb.getText().toString());
+                            }
+                        }
+                        
+                        if (razasSeleccionadas.isEmpty()) {
+                            Toast.makeText(this, "Seleccione al menos una raza", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        
+                        List<Animal> animalesFiltrados = animales.stream()
+                            .filter(a -> razasSeleccionadas.contains(a.getRaza()))
+                            .collect(Collectors.toList());
+                        
+                        for (Animal animal : animalesFiltrados) {
+                            guardarAlimentacion(animal.getId(), 
+                                spinnerTipo.getSelectedItem().toString(),
+                                cantidad,
+                                spinnerUnidad.getSelectedItem().toString(),
+                                fechaSeleccionada[0],
+                                costo,
+                                etObservaciones.getText().toString());
+                        }
+                        
+                        Toast.makeText(this, "Registros guardados para " + animalesFiltrados.size() + " animales", 
+                            Toast.LENGTH_LONG).show();
+                    } else {
+                        // Guardar para un solo animal
+                        if (!animales.isEmpty()) {
+                            guardarAlimentacion(animales.get(spinnerAnimal.getSelectedItemPosition()).getId(),
+                                spinnerTipo.getSelectedItem().toString(),
+                                cantidad,
+                                spinnerUnidad.getSelectedItem().toString(),
+                                fechaSeleccionada[0],
+                                costo,
+                                etObservaciones.getText().toString());
+                            
+                            Toast.makeText(this, "Registro guardado", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                    
+                    cargarRegistros();
+                } catch (NumberFormatException e) {
+                    Toast.makeText(this, "Cantidad inválida", Toast.LENGTH_SHORT).show();
                 }
             })
             .setNegativeButton("Cancelar", null)
             .create()
             .show();
+    }
+    
+    private void guardarAlimentacion(int animalId, String tipo, double cantidad, 
+                                    String unidad, String fecha, double costo, String observaciones) {
+        Alimentacion alimentacion = new Alimentacion();
+        alimentacion.setAnimalId(animalId);
+        alimentacion.setTipoAlimento(tipo);
+        alimentacion.setCantidad(cantidad);
+        alimentacion.setUnidad(unidad);
+        alimentacion.setFecha(fecha);
+        alimentacion.setCosto(costo);
+        alimentacion.setObservaciones(observaciones);
+        alimentacionDAO.insertarAlimentacion(alimentacion);
     }
     
     private void mostrarOpcionesRegistro(Alimentacion alimentacion) {

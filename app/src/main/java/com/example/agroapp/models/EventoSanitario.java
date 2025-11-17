@@ -5,6 +5,7 @@ import java.util.Date;
 public class EventoSanitario {
     private int id;
     private int animalId;
+    private String raza;
     private String tipo;
     private String fechaProgramada;
     private String fechaRealizada;
@@ -12,6 +13,8 @@ public class EventoSanitario {
     private int recordatorio;
     private String estado;
     private Date fechaEvento; // Campo adicional para notificaciones
+    private String horaRecordatorio; // Hora del recordatorio
+    private double costo; // Costo del evento
     
     public EventoSanitario() {}
     
@@ -41,6 +44,14 @@ public class EventoSanitario {
     
     public void setAnimalId(int animalId) {
         this.animalId = animalId;
+    }
+    
+    public String getRaza() {
+        return raza;
+    }
+    
+    public void setRaza(String raza) {
+        this.raza = raza;
     }
     
     public String getTipo() {
@@ -97,6 +108,22 @@ public class EventoSanitario {
     
     public void setFechaEvento(Date fechaEvento) {
         this.fechaEvento = fechaEvento;
+    }
+    
+    public String getHoraRecordatorio() {
+        return horaRecordatorio;
+    }
+    
+    public void setHoraRecordatorio(String horaRecordatorio) {
+        this.horaRecordatorio = horaRecordatorio;
+    }
+    
+    public double getCosto() {
+        return costo;
+    }
+    
+    public void setCosto(double costo) {
+        this.costo = costo;
     }
     
     public boolean isRecordatorio() {

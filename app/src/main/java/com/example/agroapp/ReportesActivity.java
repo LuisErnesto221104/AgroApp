@@ -22,7 +22,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-public class ReportesActivity extends AppCompatActivity {
+public class ReportesActivity extends BaseActivity {
     
     private TextView tvTotalAnimales, tvAnimalesSanos, tvAnimalesEnfermos, 
                      tvAnimalesVendidos, tvTotalGastos, tvPromedioGastos;

@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
 import android.os.Bundle;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
@@ -16,20 +17,18 @@ import com.example.agroapp.dao.AnimalDAO;
 import com.example.agroapp.dao.EventoSanitarioDAO;
 import com.example.agroapp.database.DatabaseHelper;
 import com.example.agroapp.models.EventoSanitario;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
-public class EventosSanitariosActivity extends AppCompatActivity {
+public class EventosSanitariosActivity extends BaseActivity {
     
     private RecyclerView recyclerView;
     private EventoSanitarioAdapter adapter;
     private EventoSanitarioDAO eventoDAO;
     private AnimalDAO animalDAO;
     private List<EventoSanitario> eventosList;
-    private FloatingActionButton fabNuevo;
     private int animalId;
 
     @SuppressLint("MissingInflatedId")
@@ -38,8 +37,10 @@ public class EventosSanitariosActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_eventos_sanitarios);
 
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setTitle("Eventos Sanitarios");
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setTitle("Eventos Sanitarios");
+        }
 
         DatabaseHelper dbHelper = DatabaseHelper.getInstance(this);
         eventoDAO = new EventoSanitarioDAO(dbHelper);
@@ -47,14 +48,14 @@ public class EventosSanitariosActivity extends AppCompatActivity {
 
         animalId = getIntent().getIntExtra("animalId", -1);
 
-        recyclerView = findViewById(R.id.recyclerViewEventos);
-        fabNuevo = findViewById(R.id.fabNuevoEvento);
+        recyclerView = findViewById(R.id.recyclerEventos);
+        Button btnNuevo = findViewById(R.id.btnNuevoEvento);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         
         cargarEventos();
         
-        fabNuevo.setOnClickListener(v -> mostrarDialogoNuevoEvento());
+        btnNuevo.setOnClickListener(v -> mostrarDialogoNuevoEvento());
     }
     
     private void cargarEventos() {

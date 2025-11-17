@@ -3,6 +3,7 @@ package com.example.agroapp.models;
 public class Gasto {
     private int id;
     private int animalId;
+    private String raza;
     private String tipo;
     private String concepto;
     private double monto;
@@ -36,6 +37,14 @@ public class Gasto {
     
     public void setAnimalId(int animalId) {
         this.animalId = animalId;
+    }
+    
+    public String getRaza() {
+        return raza;
+    }
+    
+    public void setRaza(String raza) {
+        this.raza = raza;
     }
     
     public String getTipo() {

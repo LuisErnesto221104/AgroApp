@@ -22,11 +22,11 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Animal"
+            android:text="Raza"
             android:textStyle="bold"/>
 
         <Spinner
-            android:id="@+id/spinnerAnimal"
+            android:id="@+id/spinnerRaza"
             android:layout_width="match_parent"
             android:layout_height="48dp"
             android:layout_marginBottom="12dp"/>
@@ -54,6 +54,34 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Seleccionar Fecha"
+            android:layout_marginBottom="12dp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Hora del recordatorio"
+            android:textStyle="bold"/>
+
+        <Button
+            android:id="@+id/btnHoraEvento"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Seleccionar Hora"
+            android:layout_marginBottom="12dp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Costo"
+            android:textStyle="bold"/>
+
+        <EditText
+            android:id="@+id/etCosto"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Costo del evento"
+            android:inputType="numberDecimal"
+            android:padding="12dp"
             android:layout_marginBottom="12dp"/>
 
         <TextView

@@ -20,7 +20,6 @@ import com.example.agroapp.dao.GastoDAO;
 import com.example.agroapp.database.DatabaseHelper;
 import com.example.agroapp.models.Animal;
 import com.example.agroapp.models.Gasto;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -29,14 +28,13 @@ import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class GastosActivity extends AppCompatActivity {
+public class GastosActivity extends BaseActivity {
     
     private RecyclerView recyclerView;
     private GastoAdapter adapter;
     private GastoDAO gastoDAO;
     private AnimalDAO animalDAO;
     private List<Gasto> gastosList;
-    private FloatingActionButton fabNuevo;
     private int animalIdFiltro = -1;
     private ExecutorService executorService;
     private Handler mainHandler;
@@ -62,8 +60,8 @@ public class GastosActivity extends AppCompatActivity {
         
         animalIdFiltro = getIntent().getIntExtra("animalId", -1);
         
-        recyclerView = findViewById(R.id.recyclerViewGastos);
-        fabNuevo = findViewById(R.id.fabNuevoGasto);
+        recyclerView = findViewById(R.id.recyclerGastos);
+        Button btnNuevo = findViewById(R.id.btnNuevoGasto);
         
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         
@@ -76,7 +74,7 @@ public class GastosActivity extends AppCompatActivity {
         
         cargarGastos();
         
-        fabNuevo.setOnClickListener(v -> mostrarDialogoNuevoGasto());
+        btnNuevo.setOnClickListener(v -> mostrarDialogoNuevoGasto());
     }
     
     private void cargarGastos() {
@@ -103,39 +101,41 @@ public class GastosActivity extends AppCompatActivity {
         executorService.execute(() -> {
             List<Animal> animales = animalDAO.obtenerTodosLosAnimales();
             
+            // Extraer razas únicas
+            java.util.Set<String> razasSet = new java.util.HashSet<>();
+            for (Animal animal : animales) {
+                razasSet.add(animal.getRaza());
+            }
+            String[] razas = razasSet.toArray(new String[0]);
+            
             // Mostrar diálogo en el hilo principal
             mainHandler.post(() -> {
-                if (animales.isEmpty()) {
+                if (razas.length == 0) {
                     Toast.makeText(this, "Debe registrar un animal primero", Toast.LENGTH_LONG).show();
                     return;
                 }
                 
-                mostrarDialogoNuevoGastoConAnimales(animales);
+                mostrarDialogoNuevoGastoConRazas(razas);
             });
         });
     }
     
-    private void mostrarDialogoNuevoGastoConAnimales(List<Animal> animales) {
+    private void mostrarDialogoNuevoGastoConRazas(String[] razas) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         android.view.View dialogView = getLayoutInflater().inflate(R.layout.dialog_gasto, null);
         builder.setView(dialogView);
         
-        Spinner spinnerAnimal = dialogView.findViewById(R.id.spinnerAnimal);
+        Spinner spinnerRaza = dialogView.findViewById(R.id.spinnerRaza);
         Spinner spinnerTipo = dialogView.findViewById(R.id.spinnerTipo);
         EditText etConcepto = dialogView.findViewById(R.id.etConcepto);
         EditText etMonto = dialogView.findViewById(R.id.etMonto);
         android.widget.Button btnFecha = dialogView.findViewById(R.id.btnFecha);
         EditText etObservaciones = dialogView.findViewById(R.id.etObservaciones);
         
-        // Configurar spinner de animales
-        String[] nombresAnimales = new String[animales.size()];
-        for (int i = 0; i < animales.size(); i++) {
-            nombresAnimales[i] = animales.get(i).getNumeroArete() + " - " + 
-                                 (animales.get(i).getNombre() != null ? animales.get(i).getNombre() : "Sin nombre");
-        }
-        ArrayAdapter<String> animalAdapter = new ArrayAdapter<>(this,
-            android.R.layout.simple_spinner_dropdown_item, nombresAnimales);
-        spinnerAnimal.setAdapter(animalAdapter);
+        // Configurar spinner de razas
+        ArrayAdapter<String> razaAdapter = new ArrayAdapter<>(this,
+            android.R.layout.simple_spinner_dropdown_item, razas);
+        spinnerRaza.setAdapter(razaAdapter);
         
         // Configurar spinner de tipos
         String[] tipos = {"Alimento", "Medicamento", "Vacuna", "Consulta Veterinaria", "Otro"};
@@ -176,7 +176,7 @@ public class GastosActivity extends AppCompatActivity {
                     }
                     
                     Gasto gasto = new Gasto();
-                    gasto.setAnimalId(animales.get(spinnerAnimal.getSelectedItemPosition()).getId());
+                    gasto.setRaza(spinnerRaza.getSelectedItem().toString());
                     gasto.setTipo(spinnerTipo.getSelectedItem().toString());
                     gasto.setConcepto(conceptoStr);
                     gasto.setMonto(Double.parseDouble(montoStr));
@@ -187,7 +187,7 @@ public class GastosActivity extends AppCompatActivity {
                     executorService.execute(() -> {
                         gastoDAO.insertarGasto(gasto);
                         mainHandler.post(() -> {
-                            Toast.makeText(this, "Gasto registrado", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(this, "Gasto registrado para raza " + gasto.getRaza(), Toast.LENGTH_SHORT).show();
                             cargarGastos();
                         });
                     });

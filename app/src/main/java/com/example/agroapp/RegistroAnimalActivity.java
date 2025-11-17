@@ -3,6 +3,7 @@ package com.example.agroapp;
 import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -22,9 +23,9 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 
-public class RegistroAnimalActivity extends AppCompatActivity {
+public class RegistroAnimalActivity extends BaseActivity {
     
-    private EditText etArete, etNombre, etPrecioCompra, etObservaciones;
+    private EditText etArete, etPrecioCompra, etObservaciones;
     private android.widget.Button btnFechaNacimiento, btnFechaAdquisicion;
     private Spinner spinnerRaza, spinnerSexo, spinnerEstado;
     private ImageView ivFotoAnimal;
@@ -75,7 +76,6 @@ public class RegistroAnimalActivity extends AppCompatActivity {
     
     private void inicializarVistas() {
         etArete = findViewById(R.id.etArete);
-        etNombre = findViewById(R.id.etNombre);
         btnFechaNacimiento = findViewById(R.id.btnFechaNacimiento);
         btnFechaAdquisicion = findViewById(R.id.btnFechaAdquisicion);
         etPrecioCompra = findViewById(R.id.etPrecioCompra);
@@ -159,17 +159,34 @@ public class RegistroAnimalActivity extends AppCompatActivity {
             Uri imageUri = data.getData();
             try {
                 Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
-                ivFotoAnimal.setImageBitmap(bitmap);
-                fotoBase64 = imageUri.toString();
+                // Redimensionar bitmap para no ocupar tanto espacio
+                int maxSize = 800;
+                int width = bitmap.getWidth();
+                int height = bitmap.getHeight();
+                float ratio = Math.min((float) maxSize / width, (float) maxSize / height);
+                int newWidth = Math.round(width * ratio);
+                int newHeight = Math.round(height * ratio);
+                Bitmap resizedBitmap = Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true);
+                
+                // Convertir a Base64
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                resizedBitmap.compress(Bitmap.CompressFormat.JPEG, 80, baos);
+                byte[] imageBytes = baos.toByteArray();
+                fotoBase64 = android.util.Base64.encodeToString(imageBytes, android.util.Base64.DEFAULT);
+                
+                // Mostrar en ImageView
+                ivFotoAnimal.setImageBitmap(resizedBitmap);
+                
+                Toast.makeText(this, "Foto seleccionada", Toast.LENGTH_SHORT).show();
             } catch (IOException e) {
                 e.printStackTrace();
+                Toast.makeText(this, "Error al cargar la foto", Toast.LENGTH_SHORT).show();
             }
         }
     }
     
     private void guardarAnimal() {
         String arete = etArete.getText().toString().trim();
-        String nombre = etNombre.getText().toString().trim();
         String raza = spinnerRaza.getSelectedItem().toString();
         String sexo = spinnerSexo.getSelectedItem().toString();
         String fechaNac = fechaNacimiento[0];
@@ -190,7 +207,7 @@ public class RegistroAnimalActivity extends AppCompatActivity {
         
         Animal animal = new Animal();
         animal.setNumeroArete(arete);
-        animal.setNombre(nombre);
+        animal.setNombre(arete); // Usar arete como nombre
         animal.setRaza(raza);
         animal.setSexo(sexo);
         animal.setFechaNacimiento(fechaNac);
@@ -216,7 +233,6 @@ public class RegistroAnimalActivity extends AppCompatActivity {
         Animal animal = animalDAO.obtenerAnimalPorId(animalId);
         if (animal != null) {
             etArete.setText(animal.getNumeroArete());
-            etNombre.setText(animal.getNombre());
             fechaNacimiento[0] = animal.getFechaNacimiento();
             fechaIngreso[0] = animal.getFechaIngreso();
             btnFechaNacimiento.setText(animal.getFechaNacimiento());
@@ -229,7 +245,17 @@ public class RegistroAnimalActivity extends AppCompatActivity {
             setSpinnerValue(spinnerSexo, animal.getSexo());
             setSpinnerValue(spinnerEstado, animal.getEstado());
             
+            // Cargar foto si existe
             fotoBase64 = animal.getFoto() != null ? animal.getFoto() : "";
+            if (fotoBase64 != null && !fotoBase64.isEmpty()) {
+                try {
+                    byte[] decodedString = android.util.Base64.decode(fotoBase64, android.util.Base64.DEFAULT);
+                    Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+                    ivFotoAnimal.setImageBitmap(decodedByte);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
     

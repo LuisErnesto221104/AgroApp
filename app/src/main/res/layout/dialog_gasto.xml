@@ -22,11 +22,11 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Animal (Opcional)"
+            android:text="Raza"
             android:textStyle="bold"/>
 
         <Spinner
-            android:id="@+id/spinnerAnimal"
+            android:id="@+id/spinnerRaza"
             android:layout_width="match_parent"
             android:layout_height="48dp"
             android:layout_marginBottom="12dp"/>

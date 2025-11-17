@@ -85,18 +85,6 @@
             </LinearLayout>
         </LinearLayout>
 
-        <!-- TabLayout -->
-        <com.google.android.material.tabs.TabLayout
-            android:id="@+id/tabLayout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/white"
-            app:tabMode="scrollable"
-            app:tabTextColor="@color/text_secondary"
-            app:tabSelectedTextColor="@color/primary"
-            app:tabIndicatorColor="@color/primary"
-            app:tabIndicatorHeight="3dp" />
-
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.core.widget.NestedScrollView
@@ -575,6 +563,28 @@
 
             </GridLayout>
 
+            <!-- Botón Registrar Venta -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/btnRegistrarVenta"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:visibility="visible"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="8dp"
+                app:cardBackgroundColor="@color/btn_blue">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="💰 Registrar Venta"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/white"
+                    android:gravity="center"
+                    android:padding="20dp" />
+            </androidx.cardview.widget.CardView>
+
             <!-- Botones de Editar y Eliminar -->
             <LinearLayout
                 android:layout_width="match_parent"
@@ -626,12 +636,6 @@
                 </androidx.cardview.widget.CardView>
 
             </LinearLayout>
-
-            <!-- Contenedor para contenido de tabs -->
-            <FrameLayout
-                android:id="@+id/tabContent"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
 
         </LinearLayout>
 
