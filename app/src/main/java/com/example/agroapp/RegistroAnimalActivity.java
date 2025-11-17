@@ -245,6 +245,13 @@ public class RegistroAnimalActivity extends BaseActivity {
             setSpinnerValue(spinnerSexo, animal.getSexo());
             setSpinnerValue(spinnerEstado, animal.getEstado());
             
+            // Bloquear cambio de estado si el animal está vendido o muerto
+            if (animal.getEstado() != null && 
+                (animal.getEstado().equalsIgnoreCase("vendido") || animal.getEstado().equalsIgnoreCase("muerto"))) {
+                spinnerEstado.setEnabled(false);
+                spinnerEstado.setAlpha(0.5f);
+            }
+            
             // Cargar foto si existe
             fotoBase64 = animal.getFoto() != null ? animal.getFoto() : "";
             if (fotoBase64 != null && !fotoBase64.isEmpty()) {

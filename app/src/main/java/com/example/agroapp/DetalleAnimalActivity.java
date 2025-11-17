@@ -202,6 +202,61 @@ public class DetalleAnimalActivity extends BaseActivity {
     }
     
     private void configurarListeners() {
+        // Verificar si el animal está vendido o muerto
+        boolean bloqueado = (animal.getEstado() != null && 
+            (animal.getEstado().equalsIgnoreCase("vendido") || animal.getEstado().equalsIgnoreCase("muerto")));
+        
+        if (bloqueado) {
+            // Deshabilitar y oscurecer las tarjetas bloqueadas
+            cardEventosSanitarios.setEnabled(false);
+            cardEventosSanitarios.setAlpha(0.5f);
+            cardHistorialClinico.setEnabled(false);
+            cardHistorialClinico.setAlpha(0.5f);
+            cardGastos.setEnabled(false);
+            cardGastos.setAlpha(0.5f);
+            cardAlimentacion.setEnabled(false);
+            cardAlimentacion.setAlpha(0.5f);
+            
+            // Mostrar mensaje al intentar acceder
+            View.OnClickListener mensajeBloqueado = v -> 
+                Toast.makeText(this, "No se pueden realizar acciones en un animal " + animal.getEstado().toLowerCase(), 
+                    Toast.LENGTH_SHORT).show();
+            
+            cardEventosSanitarios.setOnClickListener(mensajeBloqueado);
+            cardHistorialClinico.setOnClickListener(mensajeBloqueado);
+            cardGastos.setOnClickListener(mensajeBloqueado);
+            cardAlimentacion.setOnClickListener(mensajeBloqueado);
+            
+            // Ocultar botón de editar y registrar venta si está muerto o vendido
+            btnEditar.setVisibility(View.GONE);
+            btnRegistrarVenta.setVisibility(View.GONE);
+        } else {
+            // Configuración normal de listeners
+            cardEventosSanitarios.setOnClickListener(v -> {
+                Intent intent = new Intent(this, EventosSanitariosActivity.class);
+                intent.putExtra("animalId", animalId);
+                startActivity(intent);
+            });
+            
+            cardHistorialClinico.setOnClickListener(v -> {
+                Intent intent = new Intent(this, HistorialClinicoActivity.class);
+                intent.putExtra("animalId", animalId);
+                startActivity(intent);
+            });
+            
+            cardGastos.setOnClickListener(v -> {
+                Intent intent = new Intent(this, GastosActivity.class);
+                intent.putExtra("animalId", animalId);
+                startActivity(intent);
+            });
+            
+            cardAlimentacion.setOnClickListener(v -> {
+                Intent intent = new Intent(this, AlimentacionActivity.class);
+                intent.putExtra("animalId", animalId);
+                startActivity(intent);
+            });
+        }
+        
         btnEditar.setOnClickListener(v -> {
             Intent intent = new Intent(this, RegistroAnimalActivity.class);
             intent.putExtra("modo", "editar");
@@ -213,30 +268,6 @@ public class DetalleAnimalActivity extends BaseActivity {
         
         btnRegistrarVenta.setOnClickListener(v -> {
             mostrarDialogoRegistrarVenta();
-        });
-        
-        cardEventosSanitarios.setOnClickListener(v -> {
-            Intent intent = new Intent(this, EventosSanitariosActivity.class);
-            intent.putExtra("animalId", animalId);
-            startActivity(intent);
-        });
-        
-        cardHistorialClinico.setOnClickListener(v -> {
-            Intent intent = new Intent(this, HistorialClinicoActivity.class);
-            intent.putExtra("animalId", animalId);
-            startActivity(intent);
-        });
-        
-        cardGastos.setOnClickListener(v -> {
-            Intent intent = new Intent(this, GastosActivity.class);
-            intent.putExtra("animalId", animalId);
-            startActivity(intent);
-        });
-        
-        cardAlimentacion.setOnClickListener(v -> {
-            Intent intent = new Intent(this, AlimentacionActivity.class);
-            intent.putExtra("animalId", animalId);
-            startActivity(intent);
         });
     }
     

@@ -86,30 +86,6 @@
             android:text="Seleccionar Fecha"
             android:layout_marginBottom="12dp"/>
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <Button
-                android:id="@+id/btnGuardar"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/guardar"
-                android:backgroundTint="@color/primary"
-                android:layout_marginEnd="8dp"/>
-
-            <Button
-                android:id="@+id/btnCancelar"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/cancelar"
-                android:backgroundTint="#757575"
-                android:layout_marginStart="8dp"/>
-        </LinearLayout>
-
     </LinearLayout>
 
 </ScrollView>

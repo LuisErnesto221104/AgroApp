@@ -9,14 +9,14 @@
     <color name="white">#FFFFFFFF</color>
     
     <!-- Colores principales del prototipo -->
-    <color name="primary">#16a34a</color>
-    <color name="primary_dark">#15803d</color>
-    <color name="accent">#FF9800</color>
-    <color name="background">#f0f9f0</color>
+    <color name="primary">#047857</color>
+    <color name="primary_dark">#065f46</color>
+    <color name="accent">#ea580c</color>
+    <color name="background">#ffffff</color>
     <color name="card_background">#FFFFFF</color>
-    <color name="text_primary">#1f2937</color>
-    <color name="text_secondary">#6b7280</color>
-    <color name="divider">#d1d5db</color>
+    <color name="text_primary">#0f172a</color>
+    <color name="text_secondary">#475569</color>
+    <color name="divider">#cbd5e1</color>
     
     <!-- Estados de animales -->
     <color name="estado_sano">#16a34a</color>

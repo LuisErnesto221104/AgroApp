@@ -76,11 +76,29 @@ public class RegistroComprasActivity extends BaseActivity {
     
     private void cargarAnimales() {
         executorService.execute(() -> {
-            animalesList = animalDAO.obtenerTodos();
+            List<Animal> todosAnimales = animalDAO.obtenerTodos();
+            animalesList = new ArrayList<>();
+            
+            // Filtrar animales vendidos y muertos
+            for (Animal animal : todosAnimales) {
+                if (animal.getEstado() != null && 
+                    !animal.getEstado().equalsIgnoreCase("vendido") && 
+                    !animal.getEstado().equalsIgnoreCase("muerto")) {
+                    animalesList.add(animal);
+                }
+            }
             
             mainHandler.post(() -> {
                 layoutAnimales.removeAllViews();
                 checkBoxes.clear();
+                
+                if (animalesList.isEmpty()) {
+                    TextView tvVacio = new TextView(this);
+                    tvVacio.setText("No hay animales disponibles para registrar compras");
+                    tvVacio.setPadding(16, 16, 16, 16);
+                    layoutAnimales.addView(tvVacio);
+                    return;
+                }
                 
                 for (Animal animal : animalesList) {
                     CheckBox checkBox = new CheckBox(this);

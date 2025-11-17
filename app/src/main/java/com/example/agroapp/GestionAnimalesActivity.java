@@ -24,6 +24,7 @@ public class GestionAnimalesActivity extends BaseActivity {
     private AnimalDAO animalDAO;
     private List<Animal> animalesList;
     private List<Animal> animalesListFull;
+    private String estadoFiltro = "Todos";
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,35 +102,35 @@ public class GestionAnimalesActivity extends BaseActivity {
     }
     
     private void filtrarPorEstado(String estado) {
-        if (estado.equals("Todos")) {
-            animalesList.clear();
-            animalesList.addAll(animalesListFull);
-        } else {
-            animalesList.clear();
-            for (Animal animal : animalesListFull) {
-                if (animal.getEstado() != null && animal.getEstado().equals(estado)) {
-                    animalesList.add(animal);
-                }
-            }
-        }
-        adapter.notifyItemRangeChanged(0, animalesList.size());
+        estadoFiltro = estado;
+        SearchView searchView = findViewById(R.id.searchView);
+        String textoActual = searchView.getQuery().toString();
+        aplicarFiltros(textoActual);
     }
     
     private void filtrarPorTexto(String texto) {
+        aplicarFiltros(texto);
+    }
+    
+    private void aplicarFiltros(String texto) {
         animalesList.clear();
-        if (texto.isEmpty()) {
-            animalesList.addAll(animalesListFull);
-        } else {
-            String textoBusqueda = texto.toLowerCase();
-            for (Animal animal : animalesListFull) {
-                if ((animal.getNumeroArete() != null && animal.getNumeroArete().toLowerCase().contains(textoBusqueda)) ||
-                    (animal.getNombre() != null && animal.getNombre().toLowerCase().contains(textoBusqueda)) ||
-                    (animal.getRaza() != null && animal.getRaza().toLowerCase().contains(textoBusqueda))) {
-                    animalesList.add(animal);
-                }
+        String textoBusqueda = texto.toLowerCase().trim();
+        
+        for (Animal animal : animalesListFull) {
+            // Filtro por estado
+            boolean cumpleEstado = estadoFiltro.equals("Todos") || 
+                (animal.getEstado() != null && animal.getEstado().equals(estadoFiltro));
+            
+            // Filtro por texto
+            boolean cumpleTexto = textoBusqueda.isEmpty() ||
+                (animal.getNumeroArete() != null && animal.getNumeroArete().toLowerCase().contains(textoBusqueda)) ||
+                (animal.getRaza() != null && animal.getRaza().toLowerCase().contains(textoBusqueda));
+            
+            if (cumpleEstado && cumpleTexto) {
+                animalesList.add(animal);
             }
         }
-        adapter.notifyItemRangeChanged(0, animalesList.size());
+        adapter.notifyDataSetChanged();
     }
     
     @Override
