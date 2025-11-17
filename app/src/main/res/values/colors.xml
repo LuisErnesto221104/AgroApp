@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    
+    <!-- Colores principales del prototipo -->
+    <color name="primary">#16a34a</color>
+    <color name="primary_dark">#15803d</color>
+    <color name="accent">#FF9800</color>
+    <color name="background">#f0f9f0</color>
+    <color name="card_background">#FFFFFF</color>
+    <color name="text_primary">#1f2937</color>
+    <color name="text_secondary">#6b7280</color>
+    <color name="divider">#d1d5db</color>
+    
+    <!-- Estados de animales -->
+    <color name="estado_sano">#16a34a</color>
+    <color name="estado_enfermo">#dc2626</color>
+    <color name="estado_vendido">#7e22ce</color>
+    <color name="estado_muerto">#9E9E9E</color>
+    
+    <!-- Colores para estadísticas -->
+    <color name="stat_green_bg">#dcfce7</color>
+    <color name="stat_green_text">#166534</color>
+    <color name="stat_blue_bg">#dbeafe</color>
+    <color name="stat_blue_text">#1e40af</color>
+    <color name="stat_purple_bg">#f3e8ff</color>
+    <color name="stat_purple_text">#7e22ce</color>
+    <color name="stat_red_bg">#fee2e2</color>
+    <color name="stat_red_text">#dc2626</color>
+    
+    <!-- Colores de alertas -->
+    <color name="alert_warning_bg">#fef3c7</color>
+    <color name="alert_warning_border">#f59e0b</color>
+    <color name="alert_warning_text">#92400e</color>
+    
+    <!-- Colores de botones -->
+    <color name="btn_green">#16a34a</color>
+    <color name="btn_blue">#3b82f6</color>
+    <color name="btn_red">#ef4444</color>
+    <color name="btn_yellow">#eab308</color>
+    <color name="btn_purple">#8b5cf6</color>
+    <color name="btn_orange">#f97316</color>
+    <color name="btn_indigo">#6366f1</color>
+</resources>

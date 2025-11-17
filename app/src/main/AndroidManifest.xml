@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" 
+        android:maxSdkVersion="28" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.AgroApp">
+        
+        <activity
+            android:name=".LoginActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        
+        <activity android:name=".MainActivity" />
+        <activity android:name=".GestionAnimalesActivity" />
+        <activity android:name=".RegistroAnimalActivity" />
+        <activity android:name=".DetalleAnimalActivity" />
+        <activity android:name=".CalendarioActivity" />
+        <activity android:name=".EventosSanitariosActivity" />
+        <activity android:name=".HistorialClinicoActivity" />
+        <activity android:name=".GastosActivity" />
+        <activity android:name=".AlimentacionActivity" />
+        <activity android:name=".ReportesActivity" />
+        <activity android:name=".RecomendacionesActivity" />
+        
+        <receiver android:name=".utils.NotificationReceiver"
+            android:enabled="true"
+            android:exported="false" />
+            
+    </application>
+
+</manifest>

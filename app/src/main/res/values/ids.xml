@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="recyclerViewEventos" type="id" />
+    <item name="recyclerViewAnimales" type="id" />
+    <item name="recyclerViewGastos" type="id" />
+    <item name="recyclerViewHistorial" type="id" />
+    <item name="fabNuevoHistorial" type="id" />
+    <item name="tvObservaciones" type="id" />
+    <item name="btnHistorialClinico" type="id" />
+    <item name="btnEventosSanitarios" type="id" />
+    <item name="btnGastos" type="id" />
+    <item name="btnAlimentacion" type="id" />
+</resources>

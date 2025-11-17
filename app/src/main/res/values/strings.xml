@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">AgroApp</string>
+    <string name="usuario">Usuario</string>
+    <string name="contrasena">Contraseña</string>
+    <string name="iniciar_sesion">Iniciar Sesión</string>
+    <string name="bienvenido">Bienvenido</string>
+    <string name="animales">Animales</string>
+    <string name="registrar_animal">Registrar Animal</string>
+    <string name="calendario">Calendario Sanitario</string>
+    <string name="gastos">Gastos e Inversiones</string>
+    <string name="alimentacion">Alimentación</string>
+    <string name="reportes">Reportes</string>
+    <string name="recomendaciones">Recomendaciones</string>
+    <string name="salir">Cerrar Sesión</string>
+    <string name="guardar">Guardar</string>
+    <string name="cancelar">Cancelar</string>
+    <string name="editar">Editar</string>
+    <string name="eliminar">Eliminar</string>
+    <string name="buscar">Buscar...</string>
+</resources>
