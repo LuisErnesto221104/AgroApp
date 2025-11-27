@@ -2,10 +2,12 @@ package com.example.agroapp;
 
 import android.app.DatePickerDialog;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -13,14 +15,21 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.Toast;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import com.example.agroapp.dao.AnimalDAO;
 import com.example.agroapp.database.DatabaseHelper;
 import com.example.agroapp.models.Animal;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Locale;
 
 public class RegistroAnimalActivity extends BaseActivity {
@@ -29,7 +38,7 @@ public class RegistroAnimalActivity extends BaseActivity {
     private android.widget.Button btnFechaNacimiento, btnFechaAdquisicion;
     private Spinner spinnerRaza, spinnerSexo, spinnerEstado;
     private ImageView ivFotoAnimal;
-    private Button btnSeleccionarFoto, btnGuardar, btnCancelar;
+    private Button btnSeleccionarFoto, btnTomarFoto, btnGuardar, btnCancelar;
     private AnimalDAO animalDAO;
     private String modo;
     private int animalId;
@@ -37,8 +46,12 @@ public class RegistroAnimalActivity extends BaseActivity {
     private Calendar calendar;
     private final String[] fechaNacimiento = {""};
     private final String[] fechaIngreso = {""};
+    private Uri photoUri;
+    private String currentPhotoPath;
     
     private static final int PICK_IMAGE = 1;
+    private static final int TAKE_PHOTO = 2;
+    private static final int CAMERA_PERMISSION_CODE = 100;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,6 +98,7 @@ public class RegistroAnimalActivity extends BaseActivity {
         spinnerEstado = findViewById(R.id.spinnerEstado);
         ivFotoAnimal = findViewById(R.id.ivFotoAnimal);
         btnSeleccionarFoto = findViewById(R.id.btnSeleccionarFoto);
+        btnTomarFoto = findViewById(R.id.btnTomarFoto);
         btnGuardar = findViewById(R.id.btnGuardar);
         btnCancelar = findViewById(R.id.btnCancelar);
     }
@@ -121,6 +135,7 @@ public class RegistroAnimalActivity extends BaseActivity {
         btnFechaAdquisicion.setOnClickListener(v -> mostrarDatePicker(false));
         
         btnSeleccionarFoto.setOnClickListener(v -> seleccionarFoto());
+        btnTomarFoto.setOnClickListener(v -> verificarPermisosCamara());
         btnGuardar.setOnClickListener(v -> guardarAnimal());
         btnCancelar.setOnClickListener(v -> finish());
     }
@@ -152,32 +167,95 @@ public class RegistroAnimalActivity extends BaseActivity {
         startActivityForResult(intent, PICK_IMAGE);
     }
     
+    private void verificarPermisosCamara() {
+        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA) 
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, 
+                new String[]{android.Manifest.permission.CAMERA}, 
+                CAMERA_PERMISSION_CODE);
+        } else {
+            tomarFoto();
+        }
+    }
+    
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, 
+                                          @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == CAMERA_PERMISSION_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                tomarFoto();
+            } else {
+                Toast.makeText(this, "Permiso de cámara denegado", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+    
+    private void tomarFoto() {
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        try {
+            File photoFile = crearArchivoImagen();
+            if (photoFile != null) {
+                photoUri = FileProvider.getUriForFile(this,
+                    getPackageName() + ".fileprovider",
+                    photoFile);
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
+                startActivityForResult(takePictureIntent, TAKE_PHOTO);
+            }
+        } catch (IOException ex) {
+            Toast.makeText(this, "Error al crear archivo de imagen", Toast.LENGTH_SHORT).show();
+        } catch (Exception e) {
+            Toast.makeText(this, "No se pudo abrir la cámara", Toast.LENGTH_SHORT).show();
+        }
+    }
+    
+    private File crearArchivoImagen() throws IOException {
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
+        String imageFileName = "ANIMAL_" + timeStamp + "_";
+        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File image = File.createTempFile(imageFileName, ".jpg", storageDir);
+        currentPhotoPath = image.getAbsolutePath();
+        return image;
+    }
+    
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == PICK_IMAGE && resultCode == RESULT_OK && data != null) {
-            Uri imageUri = data.getData();
+        
+        if (resultCode == RESULT_OK) {
+            Bitmap bitmap = null;
+            
             try {
-                Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
-                // Redimensionar bitmap para no ocupar tanto espacio
-                int maxSize = 800;
-                int width = bitmap.getWidth();
-                int height = bitmap.getHeight();
-                float ratio = Math.min((float) maxSize / width, (float) maxSize / height);
-                int newWidth = Math.round(width * ratio);
-                int newHeight = Math.round(height * ratio);
-                Bitmap resizedBitmap = Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true);
+                if (requestCode == PICK_IMAGE && data != null) {
+                    // Imagen desde galería
+                    Uri imageUri = data.getData();
+                    bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
+                } else if (requestCode == TAKE_PHOTO) {
+                    // Imagen desde cámara
+                    bitmap = BitmapFactory.decodeFile(currentPhotoPath);
+                }
                 
-                // Convertir a Base64
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                resizedBitmap.compress(Bitmap.CompressFormat.JPEG, 80, baos);
-                byte[] imageBytes = baos.toByteArray();
-                fotoBase64 = android.util.Base64.encodeToString(imageBytes, android.util.Base64.DEFAULT);
-                
-                // Mostrar en ImageView
-                ivFotoAnimal.setImageBitmap(resizedBitmap);
-                
-                Toast.makeText(this, "Foto seleccionada", Toast.LENGTH_SHORT).show();
+                if (bitmap != null) {
+                    // Redimensionar bitmap para no ocupar tanto espacio
+                    int maxSize = 800;
+                    int width = bitmap.getWidth();
+                    int height = bitmap.getHeight();
+                    float ratio = Math.min((float) maxSize / width, (float) maxSize / height);
+                    int newWidth = Math.round(width * ratio);
+                    int newHeight = Math.round(height * ratio);
+                    Bitmap resizedBitmap = Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true);
+                    
+                    // Convertir a Base64
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    resizedBitmap.compress(Bitmap.CompressFormat.JPEG, 80, baos);
+                    byte[] imageBytes = baos.toByteArray();
+                    fotoBase64 = android.util.Base64.encodeToString(imageBytes, android.util.Base64.DEFAULT);
+                    
+                    // Mostrar en ImageView
+                    ivFotoAnimal.setImageBitmap(resizedBitmap);
+                    
+                    Toast.makeText(this, "Foto guardada correctamente", Toast.LENGTH_SHORT).show();
+                }
             } catch (IOException e) {
                 e.printStackTrace();
                 Toast.makeText(this, "Error al cargar la foto", Toast.LENGTH_SHORT).show();
@@ -202,6 +280,16 @@ public class RegistroAnimalActivity extends BaseActivity {
         
         if (arete.isEmpty()) {
             Toast.makeText(this, "El número de arete es obligatorio", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        if (arete.length() != 10) {
+            Toast.makeText(this, "El número de arete debe tener exactamente 10 caracteres", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        if (!arete.matches("\\d{10}")) {
+            Toast.makeText(this, "El número de arete debe contener solo números (10 dígitos)", Toast.LENGTH_SHORT).show();
             return;
         }
         

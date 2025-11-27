@@ -8,43 +8,51 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     
-    <!-- Colores principales del prototipo -->
-    <color name="primary">#047857</color>
-    <color name="primary_dark">#065f46</color>
-    <color name="accent">#ea580c</color>
-    <color name="background">#ffffff</color>
-    <color name="card_background">#FFFFFF</color>
-    <color name="text_primary">#0f172a</color>
-    <color name="text_secondary">#475569</color>
-    <color name="divider">#cbd5e1</color>
+    <!-- Nueva Paleta de Colores -->
+    <color name="beige_light">#faf4de</color>        <!-- #faf4de -->
+    <color name="tan">#c78f52</color>                 <!-- #c78f52 -->
+    <color name="sage">#98a287</color>                <!-- #98a287 -->
+    <color name="forest_green">#41692a</color>        <!-- #41692a -->
+    <color name="teal_blue">#0188a8</color>           <!-- #0188a8 -->
+    <color name="dark_brown">#6d3e14</color>          <!-- #6d3e14 -->
     
-    <!-- Estados de animales -->
-    <color name="estado_sano">#16a34a</color>
-    <color name="estado_enfermo">#dc2626</color>
-    <color name="estado_vendido">#7e22ce</color>
-    <color name="estado_muerto">#9E9E9E</color>
+    <!-- Colores principales del prototipo (actualizados con nueva paleta) -->
+    <color name="primary">#41692a</color>             <!-- Verde bosque -->
+    <color name="primary_dark">#6d3e14</color>        <!-- Marrón oscuro -->
+    <color name="accent">#c78f52</color>              <!-- Tan/Naranja -->
+    <color name="background">#faf4de</color>          <!-- Beige claro -->
+    <color name="card_background">#FFFFFF</color>
+    <color name="text_primary">#6d3e14</color>        <!-- Marrón oscuro -->
+    <color name="text_secondary">#98a287</color>      <!-- Sage -->
+    <color name="divider">#98a287</color>             <!-- Sage -->
+    
+    <!-- Estados de animales (usando nueva paleta) -->
+    <color name="estado_sano">#41692a</color>         <!-- Verde bosque -->
+    <color name="estado_enfermo">#c78f52</color>      <!-- Tan -->
+    <color name="estado_vendido">#0188a8</color>      <!-- Azul teal -->
+    <color name="estado_muerto">#98a287</color>       <!-- Sage -->
     
     <!-- Colores para estadísticas -->
-    <color name="stat_green_bg">#dcfce7</color>
-    <color name="stat_green_text">#166534</color>
-    <color name="stat_blue_bg">#dbeafe</color>
-    <color name="stat_blue_text">#1e40af</color>
-    <color name="stat_purple_bg">#f3e8ff</color>
-    <color name="stat_purple_text">#7e22ce</color>
-    <color name="stat_red_bg">#fee2e2</color>
-    <color name="stat_red_text">#dc2626</color>
+    <color name="stat_green_bg">#e8f5e0</color>
+    <color name="stat_green_text">#41692a</color>
+    <color name="stat_blue_bg">#e0f2f7</color>
+    <color name="stat_blue_text">#0188a8</color>
+    <color name="stat_purple_bg">#f5f0e8</color>
+    <color name="stat_purple_text">#6d3e14</color>
+    <color name="stat_red_bg">#f9ede0</color>
+    <color name="stat_red_text">#c78f52</color>
     
     <!-- Colores de alertas -->
-    <color name="alert_warning_bg">#fef3c7</color>
-    <color name="alert_warning_border">#f59e0b</color>
-    <color name="alert_warning_text">#92400e</color>
+    <color name="alert_warning_bg">#faf4de</color>
+    <color name="alert_warning_border">#c78f52</color>
+    <color name="alert_warning_text">#6d3e14</color>
     
-    <!-- Colores de botones -->
-    <color name="btn_green">#16a34a</color>
-    <color name="btn_blue">#3b82f6</color>
-    <color name="btn_red">#ef4444</color>
-    <color name="btn_yellow">#eab308</color>
-    <color name="btn_purple">#8b5cf6</color>
-    <color name="btn_orange">#f97316</color>
-    <color name="btn_indigo">#6366f1</color>
+    <!-- Colores de botones (usando nueva paleta) -->
+    <color name="btn_green">#41692a</color>
+    <color name="btn_blue">#0188a8</color>
+    <color name="btn_red">#c78f52</color>
+    <color name="btn_yellow">#c78f52</color>
+    <color name="btn_purple">#98a287</color>
+    <color name="btn_orange">#c78f52</color>
+    <color name="btn_indigo">#0188a8</color>
 </resources>

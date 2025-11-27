@@ -113,6 +113,19 @@ public class DetalleAnimalActivity extends BaseActivity {
             tvNombre.setText(animal.getNombre() != null ? animal.getNombre() : "Sin nombre");
             tvArete.setText("Arete: " + animal.getNumeroArete());
             
+            // Cargar foto si existe
+            if (animal.getFoto() != null && !animal.getFoto().isEmpty()) {
+                try {
+                    byte[] decodedString = android.util.Base64.decode(animal.getFoto(), android.util.Base64.DEFAULT);
+                    android.graphics.Bitmap decodedByte = android.graphics.BitmapFactory.decodeByteArray(
+                        decodedString, 0, decodedString.length);
+                    ivFotoAnimal.setImageBitmap(decodedByte);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    // Mantener imagen por defecto si hay error
+                }
+            }
+            
             // Badge estado
             String estado = animal.getEstado() != null ? animal.getEstado() : "Activo";
             badgeEstado.setText(estado);
