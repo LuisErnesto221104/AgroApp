@@ -14,7 +14,7 @@ import com.example.agroapp.models.Usuario;
 public class LoginActivity extends AppCompatActivity {
     
     private TextInputEditText etUsuario, etPassword;
-    private CardView btnLogin;
+    private CardView btnLogin, btnRegistrar;
     private DatabaseHelper dbHelper;
     private UsuarioDAO usuarioDAO;
     
@@ -29,6 +29,7 @@ public class LoginActivity extends AppCompatActivity {
         etUsuario = findViewById(R.id.etUsuario);
         etPassword = findViewById(R.id.etPassword);
         btnLogin = findViewById(R.id.btnLogin);
+        btnRegistrar = findViewById(R.id.btnRegistrar);
         
         // Verificar si ya hay una sesión activa
         SharedPreferences prefs = getSharedPreferences("AgroAppPrefs", MODE_PRIVATE);
@@ -36,10 +37,11 @@ public class LoginActivity extends AppCompatActivity {
             irAMainActivity();
         }
         
-        btnLogin.setOnClickListener(v -> intentarLogin());
+        btnLogin.setOnClickListener(v -> iniciarSesion());
+        btnRegistrar.setOnClickListener(v -> registrarUsuario());
     }
     
-    private void intentarLogin() {
+    private void iniciarSesion() {
         String username = etUsuario.getText().toString().trim();
         String password = etPassword.getText().toString().trim();
         
@@ -48,7 +50,7 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
         
-        // Intentar validar usuario existente
+        // Validar que el usuario existe en la BD
         Usuario usuario = usuarioDAO.validarUsuario(username, password);
         
         if (usuario != null) {
@@ -61,27 +63,48 @@ public class LoginActivity extends AppCompatActivity {
             Usuario usuarioExistente = usuarioDAO.obtenerPorUsername(username);
             
             if (usuarioExistente != null) {
-                // Usuario existe pero contraseña incorrecta
                 Toast.makeText(this, "Contraseña incorrecta", Toast.LENGTH_SHORT).show();
             } else {
-                // Usuario no existe - Crear cuenta automáticamente
-                Usuario nuevoUsuario = new Usuario();
-                nuevoUsuario.setUsername(username);
-                nuevoUsuario.setPassword(password);
-                nuevoUsuario.setNombre(username); // Usar username como nombre inicial
-                
-                long id = usuarioDAO.insertar(nuevoUsuario);
-                
-                if (id > 0) {
-                    nuevoUsuario.setId((int) id);
-                    guardarSesion(nuevoUsuario);
-                    Toast.makeText(this, "¡Cuenta creada! Bienvenido " + nuevoUsuario.getNombre(), 
-                            Toast.LENGTH_LONG).show();
-                    irAMainActivity();
-                } else {
-                    Toast.makeText(this, "Error al crear la cuenta", Toast.LENGTH_SHORT).show();
-                }
+                Toast.makeText(this, "El usuario no existe. Use 'Registrar Usuario' para crear una cuenta", 
+                        Toast.LENGTH_LONG).show();
             }
+        }
+    }
+    
+    private void registrarUsuario() {
+        String username = etUsuario.getText().toString().trim();
+        String password = etPassword.getText().toString().trim();
+        
+        if (username.isEmpty() || password.isEmpty()) {
+            Toast.makeText(this, "Por favor complete todos los campos", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        // Verificar si el usuario ya existe
+        Usuario usuarioExistente = usuarioDAO.obtenerPorUsername(username);
+        
+        if (usuarioExistente != null) {
+            Toast.makeText(this, "El usuario ya existe. Use 'Iniciar Sesión' si ya tiene cuenta", 
+                    Toast.LENGTH_LONG).show();
+            return;
+        }
+        
+        // Crear nuevo usuario
+        Usuario nuevoUsuario = new Usuario();
+        nuevoUsuario.setUsername(username);
+        nuevoUsuario.setPassword(password);
+        nuevoUsuario.setNombre(username);
+        
+        long id = usuarioDAO.insertar(nuevoUsuario);
+        
+        if (id > 0) {
+            nuevoUsuario.setId((int) id);
+            guardarSesion(nuevoUsuario);
+            Toast.makeText(this, "¡Cuenta creada exitosamente! Bienvenido " + nuevoUsuario.getNombre(), 
+                    Toast.LENGTH_LONG).show();
+            irAMainActivity();
+        } else {
+            Toast.makeText(this, "Error al crear la cuenta. Intente nuevamente", Toast.LENGTH_SHORT).show();
         }
     }
     
