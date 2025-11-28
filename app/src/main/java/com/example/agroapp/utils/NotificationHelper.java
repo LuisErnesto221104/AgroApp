@@ -8,7 +8,9 @@ import android.os.Build;
 
 import com.example.agroapp.models.EventoSanitario;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Locale;
 
 public class NotificationHelper {
 
@@ -18,16 +20,16 @@ public class NotificationHelper {
      * @param evento EventoSanitario para el cual programar la notificación
      */
     public static void programarNotificacion(Context context, EventoSanitario evento) {
-        if (!evento.isRecordatorio()) {
+        if (evento.getRecordatorio() != 1) {
             return; // No programar si el recordatorio está desactivado
         }
 
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         
         Intent intent = new Intent(context, NotificationReceiver.class);
-        intent.putExtra("evento_id", evento.getId());
-        intent.putExtra("tipo", evento.getTipo());
-        intent.putExtra("descripcion", evento.getDescripcion());
+        intent.putExtra("titulo", "Recordatorio: " + evento.getTipo());
+        intent.putExtra("mensaje", evento.getDescripcion());
+        intent.putExtra("eventoId", evento.getId());
         
         // Usar FLAG_IMMUTABLE para Android 12+
         int flags = PendingIntent.FLAG_UPDATE_CURRENT;
@@ -42,9 +44,16 @@ public class NotificationHelper {
             flags
         );
 
-        // Programar la alarma para 1 día antes del evento a las 9:00 AM
+        // Parsear la fecha del evento
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
         Calendar calendar = Calendar.getInstance();
-        calendar.setTime(evento.getFechaEvento());
+        try {
+            calendar.setTime(sdf.parse(evento.getFechaProgramada()));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return;
+        }
+        
         calendar.add(Calendar.DAY_OF_MONTH, -1); // Un día antes
         calendar.set(Calendar.HOUR_OF_DAY, 9);
         calendar.set(Calendar.MINUTE, 0);
@@ -54,7 +63,7 @@ public class NotificationHelper {
         long currentTime = System.currentTimeMillis();
 
         // Solo programar si la fecha está en el futuro
-        if (triggerTime > currentTime) {
+        if (triggerTime > currentTime && alarmManager != null) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 // Para Android 6.0+, usar setExactAndAllowWhileIdle para mayor precisión
                 alarmManager.setExactAndAllowWhileIdle(

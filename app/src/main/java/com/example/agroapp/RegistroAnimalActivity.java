@@ -77,6 +77,9 @@ public class RegistroAnimalActivity extends BaseActivity {
             if (getSupportActionBar() != null) {
                 getSupportActionBar().setTitle("Editar Animal");
             }
+            // Bloquear edición del arete en modo editar
+            etArete.setEnabled(false);
+            etArete.setAlpha(0.5f);
             cargarDatosAnimal();
         } else {
             if (getSupportActionBar() != null) {

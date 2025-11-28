@@ -59,34 +59,43 @@ public class BaseActivity extends AppCompatActivity {
         etPassword.setInputType(android.text.InputType.TYPE_CLASS_TEXT | 
                                android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD);
         etPassword.setHint("Contraseña");
+        etPassword.setPadding(50, 30, 50, 30);
         builder.setView(etPassword);
         
-        builder.setPositiveButton("Ingresar", (dialog, which) -> {
-            String password = etPassword.getText().toString();
-            verificarContraseña(password);
-        });
+        builder.setPositiveButton("Ingresar", null); // Se configura después para prevenir cierre automático
         
         builder.setNegativeButton("Cancelar", (dialog, which) -> {
             // Volver al login
+            dialog.dismiss();
             volverAlLogin();
         });
         
         AlertDialog dialog = builder.create();
         dialog.show();
-    }
-    
-    private void verificarContraseña(String password) {
-        SharedPreferences prefs = getSharedPreferences("AgroAppPrefs", MODE_PRIVATE);
-        String passwordGuardada = prefs.getString("password", "");
         
-        if (password.equals(passwordGuardada)) {
-            // Contraseña correcta, actualizar tiempo y continuar
-            guardarTiempoActividad();
-            Toast.makeText(this, "Sesión reanudada", Toast.LENGTH_SHORT).show();
-        } else {
-            Toast.makeText(this, "Contraseña incorrecta", Toast.LENGTH_SHORT).show();
-            volverAlLogin();
-        }
+        // Configurar botón Ingresar para no cerrar automáticamente
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
+            String password = etPassword.getText().toString().trim();
+            
+            if (password.isEmpty()) {
+                Toast.makeText(this, "Ingrese su contraseña", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            
+            SharedPreferences prefs = getSharedPreferences("AgroAppPrefs", MODE_PRIVATE);
+            String passwordGuardada = prefs.getString("password", "");
+            
+            if (password.equals(passwordGuardada)) {
+                // Contraseña correcta, actualizar tiempo y continuar
+                guardarTiempoActividad();
+                Toast.makeText(this, "Sesión reanudada", Toast.LENGTH_SHORT).show();
+                dialog.dismiss();
+            } else {
+                Toast.makeText(this, "Contraseña incorrecta", Toast.LENGTH_SHORT).show();
+                etPassword.setText("");
+                etPassword.requestFocus();
+            }
+        });
     }
     
     private void volverAlLogin() {

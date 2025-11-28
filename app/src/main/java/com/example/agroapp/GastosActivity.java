@@ -74,7 +74,11 @@ public class GastosActivity extends BaseActivity {
         
         cargarGastos();
         
-        btnNuevo.setOnClickListener(v -> mostrarDialogoNuevoGasto());
+        btnNuevo.setOnClickListener(v -> {
+            // Abrir RegistroComprasActivity
+            android.content.Intent intent = new android.content.Intent(this, RegistroComprasActivity.class);
+            startActivity(intent);
+        });
     }
     
     private void cargarGastos() {
@@ -216,6 +220,13 @@ public class GastosActivity extends BaseActivity {
             })
             .setNegativeButton("Cancelar", null)
             .show();
+    }
+    
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Recargar gastos al volver de otra actividad
+        cargarGastos();
     }
     
     @Override

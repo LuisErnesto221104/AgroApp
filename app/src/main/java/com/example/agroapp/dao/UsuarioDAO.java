@@ -77,4 +77,18 @@ public class UsuarioDAO {
     public long insertarUsuario(Usuario usuario) {
         return insertar(usuario);
     }
+    
+    public boolean existeAlgunUsuario() {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM " + DatabaseHelper.TABLE_USUARIOS, null);
+        
+        boolean existe = false;
+        if (cursor != null && cursor.moveToFirst()) {
+            int count = cursor.getInt(0);
+            existe = count > 0;
+            cursor.close();
+        }
+        
+        return existe;
+    }
 }

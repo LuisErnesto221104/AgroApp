@@ -55,7 +55,7 @@ public class LoginActivity extends AppCompatActivity {
         
         if (usuario != null) {
             // Usuario existe y credenciales correctas
-            guardarSesion(usuario);
+            guardarSesion(usuario, password);
             Toast.makeText(this, "Bienvenido " + usuario.getNombre(), Toast.LENGTH_SHORT).show();
             irAMainActivity();
         } else {
@@ -80,7 +80,14 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
         
-        // Verificar si el usuario ya existe
+        // Verificar si ya existe algún usuario en el sistema
+        if (usuarioDAO.existeAlgunUsuario()) {
+            Toast.makeText(this, "Ya existe un usuario registrado. Solo se permite un usuario en el sistema.", 
+                    Toast.LENGTH_LONG).show();
+            return;
+        }
+        
+        // Verificar si el usuario ya existe (redundante pero por seguridad)
         Usuario usuarioExistente = usuarioDAO.obtenerPorUsername(username);
         
         if (usuarioExistente != null) {
@@ -99,7 +106,7 @@ public class LoginActivity extends AppCompatActivity {
         
         if (id > 0) {
             nuevoUsuario.setId((int) id);
-            guardarSesion(nuevoUsuario);
+            guardarSesion(nuevoUsuario, password);
             Toast.makeText(this, "¡Cuenta creada exitosamente! Bienvenido " + nuevoUsuario.getNombre(), 
                     Toast.LENGTH_LONG).show();
             irAMainActivity();
@@ -108,12 +115,13 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
     
-    private void guardarSesion(Usuario usuario) {
+    private void guardarSesion(Usuario usuario, String password) {
         SharedPreferences prefs = getSharedPreferences("AgroAppPrefs", MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         editor.putBoolean("isLoggedIn", true);
         editor.putInt("userId", usuario.getId());
         editor.putString("userName", usuario.getNombre());
+        editor.putString("password", password);
         editor.apply();
     }
     

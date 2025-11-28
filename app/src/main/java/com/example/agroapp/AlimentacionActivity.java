@@ -29,6 +29,10 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import android.os.Handler;
+import android.os.Looper;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class AlimentacionActivity extends BaseActivity {
     
@@ -36,6 +40,8 @@ public class AlimentacionActivity extends BaseActivity {
     private AlimentacionDAO alimentacionDAO;
     private AnimalDAO animalDAO;
     private int animalIdFiltro = -1;
+    private ExecutorService executorService;
+    private Handler mainHandler;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +54,9 @@ public class AlimentacionActivity extends BaseActivity {
         DatabaseHelper dbHelper = DatabaseHelper.getInstance(this);
         alimentacionDAO = new AlimentacionDAO(dbHelper);
         animalDAO = new AnimalDAO(dbHelper);
+        
+        executorService = Executors.newSingleThreadExecutor();
+        mainHandler = new Handler(Looper.getMainLooper());
         
         animalIdFiltro = getIntent().getIntExtra("animalId", -1);
         
@@ -62,21 +71,37 @@ public class AlimentacionActivity extends BaseActivity {
     }
     
     private void cargarRegistros() {
-        List<Alimentacion> alimentacionList;
-        if (animalIdFiltro != -1) {
-            alimentacionList = alimentacionDAO.obtenerAlimentacionPorAnimal(animalIdFiltro);
-        } else {
-            alimentacionList = new java.util.ArrayList<>();
-            List<Animal> animales = animalDAO.obtenerTodosLosAnimales();
-            for (Animal animal : animales) {
-                alimentacionList.addAll(alimentacionDAO.obtenerAlimentacionPorAnimal(animal.getId()));
+        executorService.execute(() -> {
+            List<Alimentacion> alimentacionList;
+            if (animalIdFiltro != -1) {
+                alimentacionList = alimentacionDAO.obtenerAlimentacionPorAnimal(animalIdFiltro);
+            } else {
+                alimentacionList = new java.util.ArrayList<>();
+                List<Animal> animales = animalDAO.obtenerTodosLosAnimales();
+                for (Animal animal : animales) {
+                    alimentacionList.addAll(alimentacionDAO.obtenerAlimentacionPorAnimal(animal.getId()));
+                }
             }
-        }
-        AlimentacionAdapter adapter = new AlimentacionAdapter(this, alimentacionList, animalDAO, this::mostrarOpcionesRegistro);
-        recyclerView.setAdapter(adapter);
+            
+            mainHandler.post(() -> {
+                AlimentacionAdapter adapter = new AlimentacionAdapter(this, alimentacionList, animalDAO, this::mostrarOpcionesRegistro);
+                recyclerView.setAdapter(adapter);
+            });
+        });
     }
     
     private void mostrarDialogoNuevoRegistro() {
+        executorService.execute(() -> {
+            // Cargar animales en hilo secundario
+            List<Animal> animales = animalDAO.obtenerTodosLosAnimales();
+            
+            mainHandler.post(() -> {
+                mostrarDialogoConAnimales(animales);
+            });
+        });
+    }
+    
+    private void mostrarDialogoConAnimales(List<Animal> animales) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         android.view.View dialogView = getLayoutInflater().inflate(R.layout.dialog_alimentacion, null);
         builder.setView(dialogView);
@@ -92,7 +117,6 @@ public class AlimentacionActivity extends BaseActivity {
         EditText etObservaciones = dialogView.findViewById(R.id.etObservaciones);
         
         // Configurar spinner de animales
-        List<Animal> animales = animalDAO.obtenerTodosLosAnimales();
         String[] nombresAnimales = new String[animales.size()];
         for (int i = 0; i < animales.size(); i++) {
             nombresAnimales[i] = animales.get(i).getNumeroArete() + " - " + animales.get(i).getRaza();
@@ -188,34 +212,49 @@ public class AlimentacionActivity extends BaseActivity {
                             .filter(a -> razasSeleccionadas.contains(a.getRaza()))
                             .collect(Collectors.toList());
                         
-                        for (Animal animal : animalesFiltrados) {
-                            guardarAlimentacion(animal.getId(), 
-                                spinnerTipo.getSelectedItem().toString(),
-                                cantidad,
-                                spinnerUnidad.getSelectedItem().toString(),
-                                fechaSeleccionada[0],
-                                costo,
-                                etObservaciones.getText().toString());
-                        }
+                        int totalAnimales = animalesFiltrados.size();
                         
-                        Toast.makeText(this, "Registros guardados para " + animalesFiltrados.size() + " animales", 
-                            Toast.LENGTH_LONG).show();
+                        executorService.execute(() -> {
+                            for (Animal animal : animalesFiltrados) {
+                                guardarAlimentacion(animal.getId(), 
+                                    spinnerTipo.getSelectedItem().toString(),
+                                    cantidad,
+                                    spinnerUnidad.getSelectedItem().toString(),
+                                    fechaSeleccionada[0],
+                                    costo,
+                                    etObservaciones.getText().toString());
+                            }
+                            
+                            mainHandler.post(() -> {
+                                Toast.makeText(this, "Registros guardados para " + totalAnimales + " animales", 
+                                    Toast.LENGTH_LONG).show();
+                                cargarRegistros();
+                            });
+                        });
                     } else {
                         // Guardar para un solo animal
                         if (!animales.isEmpty()) {
-                            guardarAlimentacion(animales.get(spinnerAnimal.getSelectedItemPosition()).getId(),
-                                spinnerTipo.getSelectedItem().toString(),
-                                cantidad,
-                                spinnerUnidad.getSelectedItem().toString(),
-                                fechaSeleccionada[0],
-                                costo,
-                                etObservaciones.getText().toString());
+                            final int animalIdFinal = animales.get(spinnerAnimal.getSelectedItemPosition()).getId();
+                            final String tipoFinal = spinnerTipo.getSelectedItem().toString();
+                            final String unidadFinal = spinnerUnidad.getSelectedItem().toString();
+                            final String observacionesFinal = etObservaciones.getText().toString();
                             
-                            Toast.makeText(this, "Registro guardado", Toast.LENGTH_SHORT).show();
+                            executorService.execute(() -> {
+                                guardarAlimentacion(animalIdFinal,
+                                    tipoFinal,
+                                    cantidad,
+                                    unidadFinal,
+                                    fechaSeleccionada[0],
+                                    costo,
+                                    observacionesFinal);
+                                
+                                mainHandler.post(() -> {
+                                    Toast.makeText(this, "Registro guardado", Toast.LENGTH_SHORT).show();
+                                    cargarRegistros();
+                                });
+                            });
                         }
                     }
-                    
-                    cargarRegistros();
                 } catch (NumberFormatException e) {
                     Toast.makeText(this, "Cantidad inválida", Toast.LENGTH_SHORT).show();
                 }
@@ -243,12 +282,24 @@ public class AlimentacionActivity extends BaseActivity {
             .setTitle("Eliminar registro")
             .setMessage("¿Desea eliminar este registro?")
             .setPositiveButton("Eliminar", (dialog, which) -> {
-                alimentacionDAO.eliminarAlimentacion(alimentacion.getId());
-                Toast.makeText(this, "Registro eliminado", Toast.LENGTH_SHORT).show();
-                cargarRegistros();
+                executorService.execute(() -> {
+                    alimentacionDAO.eliminarAlimentacion(alimentacion.getId());
+                    mainHandler.post(() -> {
+                        Toast.makeText(this, "Registro eliminado", Toast.LENGTH_SHORT).show();
+                        cargarRegistros();
+                    });
+                });
             })
             .setNegativeButton("Cancelar", null)
             .show();
+    }
+    
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (executorService != null && !executorService.isShutdown()) {
+            executorService.shutdown();
+        }
     }
     
     @Override
