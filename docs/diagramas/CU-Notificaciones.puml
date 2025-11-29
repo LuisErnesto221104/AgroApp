@@ -188,19 +188,15 @@ end note
 note left of PkgAlarmas
   **Permisos Android requeridos:**
   
-  ```xml
-  <uses-permission 
-    android:name="android.permission
-    .POST_NOTIFICATIONS"/>
+  POST_NOTIFICATIONS (API 33+)
+  SCHEDULE_EXACT_ALARM (API 31+)
   
-  <uses-permission 
-    android:name="android.permission
-    .SCHEDULE_EXACT_ALARM"/>
-  ```
+  **Manifest:**
+  uses-permission android.permission
+  .POST_NOTIFICATIONS
   
-  **Versiones:**
-  - POST_NOTIFICATIONS: API 33+
-  - SCHEDULE_EXACT_ALARM: API 31+
+  uses-permission android.permission
+  .SCHEDULE_EXACT_ALARM
 end note
 
 ' =============================================================================

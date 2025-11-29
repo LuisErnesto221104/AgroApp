@@ -6,8 +6,6 @@
 ' Estándar: UML 2.5
 ' =============================================================================
 
-!define RECTANGLE class
-
 skinparam backgroundColor #FEFEFE
 skinparam actorBorderColor #41692a
 skinparam actorBackgroundColor #faf4de
