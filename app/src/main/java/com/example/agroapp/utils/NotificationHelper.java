@@ -72,15 +72,15 @@ public class NotificationHelper {
 
         // Programar notificación 3 días antes
         programarNotificacionIndividual(context, evento, fechaEvento, -3, hora, minuto, 
-            NOTIFICATION_TYPE_3_DAYS, currentTime, "en 3 días");
+            NOTIFICATION_TYPE_3_DAYS, currentTime, getMensajeTiempo(NOTIFICATION_TYPE_3_DAYS));
 
         // Programar notificación 1 día antes
         programarNotificacionIndividual(context, evento, fechaEvento, -1, hora, minuto,
-            NOTIFICATION_TYPE_1_DAY, currentTime, "mañana");
+            NOTIFICATION_TYPE_1_DAY, currentTime, getMensajeTiempo(NOTIFICATION_TYPE_1_DAY));
 
         // Programar notificación el mismo día
         programarNotificacionIndividual(context, evento, fechaEvento, 0, hora, minuto,
-            NOTIFICATION_TYPE_SAME_DAY, currentTime, "hoy");
+            NOTIFICATION_TYPE_SAME_DAY, currentTime, getMensajeTiempo(NOTIFICATION_TYPE_SAME_DAY));
     }
 
     /**
@@ -159,6 +159,11 @@ public class NotificationHelper {
     /**
      * Calcula un request code único para cada notificación de un evento.
      * Cada evento tiene 3 notificaciones con códigos únicos.
+     * 
+     * Nota: Utiliza offsets de 0, 10000 y 20000 para los diferentes tipos.
+     * Para event IDs muy grandes (> Integer.MAX_VALUE - 20000), podría
+     * producir overflow, pero esto es prácticamente imposible con SQLite
+     * auto-increment en uso normal de la aplicación.
      */
     private static int calcularRequestCode(int eventoId, int tipoNotificacion) {
         switch (tipoNotificacion) {

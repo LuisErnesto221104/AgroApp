@@ -85,6 +85,10 @@ public class NotificationReceiver extends BroadcastReceiver {
     /**
      * Genera un ID único para cada notificación basado en eventoId y tipo.
      * Utiliza el mismo patrón de offset que los request codes en NotificationHelper.
+     * 
+     * Nota: Para event IDs muy grandes (> Integer.MAX_VALUE - 20000), podría
+     * producir overflow, pero esto es prácticamente imposible con SQLite
+     * auto-increment en uso normal de la aplicación.
      */
     private int generarNotificationId(int eventoId, int tipoNotificacion) {
         if (tipoNotificacion < 0) {
