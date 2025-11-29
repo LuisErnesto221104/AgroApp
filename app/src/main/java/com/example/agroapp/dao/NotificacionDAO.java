@@ -65,6 +65,28 @@ public class NotificacionDAO {
     }
     
     /**
+     * Marca una notificación como enviada, creando el registro si no existe.
+     * Este método es más robusto ya que maneja el caso donde la notificación
+     * se dispara sin haber sido registrada previamente.
+     * @param eventoId ID del evento
+     * @param tipoNotificacion Tipo de notificación
+     * @return ID del registro o número de filas actualizadas
+     */
+    public long marcarNotificacionEnviadaConInsert(int eventoId, int tipoNotificacion) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        
+        values.put(DatabaseHelper.COL_NOTIFICACION_EVENTO_ID, eventoId);
+        values.put(DatabaseHelper.COL_NOTIFICACION_TIPO, tipoNotificacion);
+        values.put(DatabaseHelper.COL_NOTIFICACION_FECHA_ENVIADA, System.currentTimeMillis());
+        values.put(DatabaseHelper.COL_NOTIFICACION_ESTADO, ESTADO_ENVIADA);
+        
+        // Usar INSERT OR REPLACE para crear o actualizar el registro
+        return db.insertWithOnConflict(DatabaseHelper.TABLE_NOTIFICACIONES_ENVIADAS, 
+            null, values, SQLiteDatabase.CONFLICT_REPLACE);
+    }
+    
+    /**
      * Cancela todas las notificaciones programadas para un evento.
      * @param eventoId ID del evento
      * @return Número de notificaciones canceladas

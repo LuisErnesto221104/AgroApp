@@ -137,7 +137,7 @@ public class NotificationHelper {
             flags
         );
 
-        // Programar la alarma usando setAndAllowWhileIdle para mayor confiabilidad
+        // Programar la alarma usando setExactAndAllowWhileIdle para mayor confiabilidad
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             alarmManager.setExactAndAllowWhileIdle(
                 AlarmManager.RTC_WAKEUP,

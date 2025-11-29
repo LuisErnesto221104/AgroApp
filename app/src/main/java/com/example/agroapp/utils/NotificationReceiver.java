@@ -68,11 +68,15 @@ public class NotificationReceiver extends BroadcastReceiver {
                 return false;
             }
             
-            // Marcar como enviada
-            notificacionDAO.marcarNotificacionEnviada(eventoId, tipoNotificacion);
+            // Marcar como enviada (usa INSERT OR REPLACE para manejar caso de registro inexistente)
+            notificacionDAO.marcarNotificacionEnviadaConInsert(eventoId, tipoNotificacion);
+            return true;
+        } catch (android.database.sqlite.SQLiteException e) {
+            Log.e(TAG, "Error de base de datos al verificar/registrar notificación", e);
+            // En caso de error de BD, permitir enviar la notificación
             return true;
         } catch (Exception e) {
-            Log.e(TAG, "Error al verificar/registrar notificación", e);
+            Log.e(TAG, "Error inesperado al verificar/registrar notificación", e);
             // En caso de error, permitir enviar la notificación
             return true;
         }
@@ -80,13 +84,24 @@ public class NotificationReceiver extends BroadcastReceiver {
     
     /**
      * Genera un ID único para cada notificación basado en eventoId y tipo.
+     * Utiliza el mismo patrón de offset que los request codes en NotificationHelper.
      */
     private int generarNotificationId(int eventoId, int tipoNotificacion) {
         if (tipoNotificacion < 0) {
             return eventoId;
         }
-        // Combinar eventoId con tipo para generar ID único
-        return eventoId * 10 + tipoNotificacion;
+        // Usar mismos offsets que NotificationHelper para evitar colisiones
+        // 0=3 días antes, 10000=1 día antes, 20000=mismo día
+        switch (tipoNotificacion) {
+            case NotificationHelper.NOTIFICATION_TYPE_3_DAYS:
+                return eventoId;
+            case NotificationHelper.NOTIFICATION_TYPE_1_DAY:
+                return eventoId + 10000;
+            case NotificationHelper.NOTIFICATION_TYPE_SAME_DAY:
+                return eventoId + 20000;
+            default:
+                return eventoId;
+        }
     }
     
     private void crearCanalNotificacion(Context context) {
