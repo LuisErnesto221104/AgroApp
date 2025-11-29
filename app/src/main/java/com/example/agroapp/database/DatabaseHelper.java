@@ -7,7 +7,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class DatabaseHelper extends SQLiteOpenHelper {
     
     private static final String DATABASE_NAME = "AgroApp.db";
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 3;
     
     // Tabla Usuarios
     public static final String TABLE_USUARIOS = "usuarios";
@@ -45,6 +45,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String COL_CALENDARIO_ESTADO = "estado";
     public static final String COL_CALENDARIO_HORA = "hora_recordatorio";
     public static final String COL_CALENDARIO_COSTO = "costo";
+    
+    // Tabla Notificaciones Enviadas (RF009 - Auditoría de notificaciones)
+    public static final String TABLE_NOTIFICACIONES_ENVIADAS = "notificaciones_enviadas";
+    public static final String COL_NOTIFICACION_ID = "id";
+    public static final String COL_NOTIFICACION_EVENTO_ID = "evento_id";
+    public static final String COL_NOTIFICACION_TIPO = "tipo_notificacion"; // 0=3 días, 1=1 día, 2=mismo día
+    public static final String COL_NOTIFICACION_FECHA_PROGRAMADA = "fecha_programada";
+    public static final String COL_NOTIFICACION_FECHA_ENVIADA = "fecha_enviada";
+    public static final String COL_NOTIFICACION_ESTADO = "estado"; // programada, enviada, cancelada
     
     // Tabla Historial Clínico
     public static final String TABLE_HISTORIAL_CLINICO = "historial_clinico";
@@ -136,6 +145,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 TABLE_ANIMALES + "(" + COL_ANIMAL_ID + ") ON DELETE CASCADE)";
         db.execSQL(createCalendario);
         
+        // Crear tabla Notificaciones Enviadas (RF009 - Auditoría)
+        String createNotificaciones = "CREATE TABLE " + TABLE_NOTIFICACIONES_ENVIADAS + " (" +
+                COL_NOTIFICACION_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                COL_NOTIFICACION_EVENTO_ID + " INTEGER NOT NULL, " +
+                COL_NOTIFICACION_TIPO + " INTEGER NOT NULL, " +
+                COL_NOTIFICACION_FECHA_PROGRAMADA + " INTEGER, " +
+                COL_NOTIFICACION_FECHA_ENVIADA + " INTEGER, " +
+                COL_NOTIFICACION_ESTADO + " TEXT DEFAULT 'programada', " +
+                "FOREIGN KEY(" + COL_NOTIFICACION_EVENTO_ID + ") REFERENCES " + 
+                TABLE_CALENDARIO_SANITARIO + "(" + COL_CALENDARIO_ID + ") ON DELETE CASCADE, " +
+                "UNIQUE(" + COL_NOTIFICACION_EVENTO_ID + ", " + COL_NOTIFICACION_TIPO + "))";
+        db.execSQL(createNotificaciones);
+        
         // Crear tabla Historial Clínico
         String createHistorial = "CREATE TABLE " + TABLE_HISTORIAL_CLINICO + " (" +
                 COL_HISTORIAL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
@@ -190,6 +212,20 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             // Migración de versión 1 a 2: agregar columna raza a calendario_sanitario y gastos
             db.execSQL("ALTER TABLE " + TABLE_CALENDARIO_SANITARIO + " ADD COLUMN " + COL_CALENDARIO_RAZA + " TEXT");
             db.execSQL("ALTER TABLE " + TABLE_GASTOS + " ADD COLUMN " + COL_GASTO_RAZA + " TEXT");
+        }
+        if (oldVersion < 3) {
+            // Migración de versión 2 a 3: agregar tabla de notificaciones enviadas (RF009)
+            String createNotificaciones = "CREATE TABLE IF NOT EXISTS " + TABLE_NOTIFICACIONES_ENVIADAS + " (" +
+                    COL_NOTIFICACION_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    COL_NOTIFICACION_EVENTO_ID + " INTEGER NOT NULL, " +
+                    COL_NOTIFICACION_TIPO + " INTEGER NOT NULL, " +
+                    COL_NOTIFICACION_FECHA_PROGRAMADA + " INTEGER, " +
+                    COL_NOTIFICACION_FECHA_ENVIADA + " INTEGER, " +
+                    COL_NOTIFICACION_ESTADO + " TEXT DEFAULT 'programada', " +
+                    "FOREIGN KEY(" + COL_NOTIFICACION_EVENTO_ID + ") REFERENCES " + 
+                    TABLE_CALENDARIO_SANITARIO + "(" + COL_CALENDARIO_ID + ") ON DELETE CASCADE, " +
+                    "UNIQUE(" + COL_NOTIFICACION_EVENTO_ID + ", " + COL_NOTIFICACION_TIPO + "))";
+            db.execSQL(createNotificaciones);
         }
     }
     
