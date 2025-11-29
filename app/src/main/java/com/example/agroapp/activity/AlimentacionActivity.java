@@ -1,4 +1,4 @@
-package com.example.agroapp;
+package com.example.agroapp.activity;
 
 import android.app.DatePickerDialog;
 import android.os.Bundle;
@@ -14,6 +14,8 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.agroapp.R;
 import com.example.agroapp.adapters.AlimentacionAdapter;
 import com.example.agroapp.dao.AlimentacionDAO;
 import com.example.agroapp.dao.AnimalDAO;
@@ -188,12 +190,14 @@ public class AlimentacionActivity extends BaseActivity {
             .setPositiveButton("Guardar", (dialog, which) -> {
                 try {
                     double cantidad = Double.parseDouble(etCantidad.getText().toString());
-                    double costo = 0;
+                    double costo;
                     String costoStr = etCosto.getText().toString().trim();
                     if (!costoStr.isEmpty()) {
                         costo = Double.parseDouble(costoStr);
+                    } else {
+                        costo = 0;
                     }
-                    
+
                     if (cbSeleccionarPorRaza.isChecked()) {
                         // Guardar para todos los animales de las razas seleccionadas
                         List<String> razasSeleccionadas = new ArrayList<>();

@@ -1,9 +1,11 @@
-package com.example.agroapp;
+package com.example.agroapp.activity;
 
 import android.os.Bundle;
 import android.text.Html;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.agroapp.R;
 
 public class RecomendacionesActivity extends BaseActivity {
     

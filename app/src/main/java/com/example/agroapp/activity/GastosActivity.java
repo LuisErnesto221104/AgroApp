@@ -1,4 +1,6 @@
-package com.example.agroapp;
+package com.example.agroapp.activity;
+
+import static com.example.agroapp.R.id.*;
 
 import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
@@ -14,6 +16,8 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.agroapp.R;
 import com.example.agroapp.adapters.GastoAdapter;
 import com.example.agroapp.dao.AnimalDAO;
 import com.example.agroapp.dao.GastoDAO;
@@ -124,6 +128,7 @@ public class GastosActivity extends BaseActivity {
         });
     }
     
+    @SuppressLint("MissingInflatedId")
     private void mostrarDialogoNuevoGastoConRazas(String[] razas) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         android.view.View dialogView = getLayoutInflater().inflate(R.layout.dialog_gasto, null);
@@ -134,8 +139,9 @@ public class GastosActivity extends BaseActivity {
         EditText etConcepto = dialogView.findViewById(R.id.etConcepto);
         EditText etMonto = dialogView.findViewById(R.id.etMonto);
         android.widget.Button btnFecha = dialogView.findViewById(R.id.btnFecha);
-        EditText etObservaciones = dialogView.findViewById(R.id.etObservaciones);
-        
+        EditText etObservaciones;
+        etObservaciones = dialogView.findViewById(R.id.etObservaciones);
+
         // Configurar spinner de razas
         ArrayAdapter<String> razaAdapter = new ArrayAdapter<>(this,
             android.R.layout.simple_spinner_dropdown_item, razas);

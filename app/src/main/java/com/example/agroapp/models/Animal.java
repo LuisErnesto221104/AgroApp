@@ -1,6 +1,8 @@
 package com.example.agroapp.models;
 
 public class Animal {
+
+    
     private int id;
     private String numeroArete;
     private String nombre;

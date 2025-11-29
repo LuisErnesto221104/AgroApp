@@ -1,8 +1,9 @@
-package com.example.agroapp;
+package com.example.agroapp.activity;
 
 import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -12,6 +13,8 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.agroapp.R;
 import com.example.agroapp.adapters.EventoSanitarioAdapter;
 import com.example.agroapp.dao.AnimalDAO;
 import com.example.agroapp.dao.EventoSanitarioDAO;
@@ -171,65 +174,110 @@ public class EventosSanitariosActivity extends BaseActivity {
     }
     
     private void mostrarDialogoEditarEvento(EventoSanitario evento) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        android.view.View dialogView = getLayoutInflater().inflate(R.layout.dialog_evento_sanitario, null);
-        builder.setView(dialogView);
-        
-        Spinner spinnerTipo = dialogView.findViewById(R.id.spinnerTipo);
-        android.widget.Button btnFechaEvento = dialogView.findViewById(R.id.btnFechaEvento);
-        EditText etDescripcion = dialogView.findViewById(R.id.etDescripcion);
-        
-        String[] tipos = {"Vacuna", "Desparasitación", "Vitaminas", "Otro"};
-        ArrayAdapter<String> tipoAdapter = new ArrayAdapter<>(this,
-            android.R.layout.simple_spinner_dropdown_item, tipos);
-        spinnerTipo.setAdapter(tipoAdapter);
-        
-        // Cargar datos existentes
-        for (int i = 0; i < tipos.length; i++) {
-            if (tipos[i].equals(evento.getTipo())) {
-                spinnerTipo.setSelection(i);
-                break;
+        try {
+            if (evento == null) {
+                Log.e("EventosSanitariosActivity", "Evento es null en mostrarDialogoEditarEvento");
+                Toast.makeText(this, "Error: evento no válido", Toast.LENGTH_SHORT).show();
+                return;
             }
+            
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            android.view.View dialogView = getLayoutInflater().inflate(R.layout.dialog_evento_sanitario, null);
+            builder.setView(dialogView);
+            
+            Spinner spinnerTipo = dialogView.findViewById(R.id.spinnerTipo);
+            android.widget.Button btnFechaEvento = dialogView.findViewById(R.id.btnFechaEvento);
+            EditText etDescripcion = dialogView.findViewById(R.id.etDescripcion);
+            
+            if (spinnerTipo == null || btnFechaEvento == null || etDescripcion == null) {
+                Log.e("EventosSanitariosActivity", "Error: vistas del diálogo son null");
+                Toast.makeText(this, "Error al cargar el diálogo", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            
+            String[] tipos = {"Vacuna", "Desparasitación", "Vitaminas", "Otro"};
+            ArrayAdapter<String> tipoAdapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_spinner_dropdown_item, tipos);
+            spinnerTipo.setAdapter(tipoAdapter);
+            
+            // Cargar datos existentes con verificación null
+            String tipoEvento = evento.getTipo();
+            if (tipoEvento != null) {
+                for (int i = 0; i < tipos.length; i++) {
+                    if (tipos[i].equals(tipoEvento)) {
+                        spinnerTipo.setSelection(i);
+                        break;
+                    }
+                }
+            }
+            
+            String descripcion = evento.getDescripcion();
+            if (descripcion != null) {
+                etDescripcion.setText(descripcion);
+            }
+            
+            String fechaProgramada = evento.getFechaProgramada();
+            if (fechaProgramada != null) {
+                btnFechaEvento.setText(fechaProgramada);
+            }
+            
+            Calendar calendar = Calendar.getInstance();
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+            final String[] fechaSeleccionada = {fechaProgramada != null ? fechaProgramada : sdf.format(calendar.getTime())};
+            
+            btnFechaEvento.setOnClickListener(v -> {
+                try {
+                    DatePickerDialog datePickerDialog = new DatePickerDialog(
+                        this,
+                        (view, year, month, dayOfMonth) -> {
+                            calendar.set(year, month, dayOfMonth);
+                            fechaSeleccionada[0] = sdf.format(calendar.getTime());
+                            btnFechaEvento.setText(fechaSeleccionada[0]);
+                        },
+                        calendar.get(Calendar.YEAR),
+                        calendar.get(Calendar.MONTH),
+                        calendar.get(Calendar.DAY_OF_MONTH)
+                    );
+                    datePickerDialog.show();
+                } catch (Exception e) {
+                    Log.e("EventosSanitariosActivity", "Error al mostrar DatePicker", e);
+                    Toast.makeText(this, "Error al abrir selector de fecha", Toast.LENGTH_SHORT).show();
+                }
+            });
+            
+            builder.setTitle("Editar Evento Sanitario")
+                .setPositiveButton("Actualizar", (dialog, which) -> {
+                    try {
+                        evento.setTipo(spinnerTipo.getSelectedItem().toString());
+                        evento.setFechaProgramada(fechaSeleccionada[0]);
+                        evento.setDescripcion(etDescripcion.getText().toString());
+                        
+                        executorService.execute(() -> {
+                            try {
+                                eventoDAO.actualizarEvento(evento);
+                                mainHandler.post(() -> {
+                                    Toast.makeText(this, "Evento actualizado", Toast.LENGTH_SHORT).show();
+                                    cargarEventos();
+                                });
+                            } catch (Exception e) {
+                                Log.e("EventosSanitariosActivity", "Error al actualizar evento en DB", e);
+                                mainHandler.post(() -> 
+                                    Toast.makeText(this, "Error al actualizar evento", Toast.LENGTH_SHORT).show()
+                                );
+                            }
+                        });
+                    } catch (Exception e) {
+                        Log.e("EventosSanitariosActivity", "Error al preparar actualización", e);
+                        Toast.makeText(this, "Error al actualizar evento", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .setNegativeButton("Cancelar", null)
+                .create()
+                .show();
+        } catch (Exception e) {
+            Log.e("EventosSanitariosActivity", "Error general en mostrarDialogoEditarEvento", e);
+            Toast.makeText(this, "Error al editar evento: " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
-        etDescripcion.setText(evento.getDescripcion());
-        btnFechaEvento.setText(evento.getFechaProgramada());
-        
-        Calendar calendar = Calendar.getInstance();
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
-        final String[] fechaSeleccionada = {evento.getFechaProgramada()};
-        
-        btnFechaEvento.setOnClickListener(v -> {
-            DatePickerDialog datePickerDialog = new DatePickerDialog(
-                this,
-                (view, year, month, dayOfMonth) -> {
-                    calendar.set(year, month, dayOfMonth);
-                    fechaSeleccionada[0] = sdf.format(calendar.getTime());
-                    btnFechaEvento.setText(fechaSeleccionada[0]);
-                },
-                calendar.get(Calendar.YEAR),
-                calendar.get(Calendar.MONTH),
-                calendar.get(Calendar.DAY_OF_MONTH)
-            );
-            datePickerDialog.show();
-        });
-        
-        builder.setTitle("Editar Evento Sanitario")
-            .setPositiveButton("Actualizar", (dialog, which) -> {
-                evento.setTipo(spinnerTipo.getSelectedItem().toString());
-                evento.setFechaProgramada(fechaSeleccionada[0]);
-                evento.setDescripcion(etDescripcion.getText().toString());
-                
-                executorService.execute(() -> {
-                    eventoDAO.actualizarEvento(evento);
-                    mainHandler.post(() -> {
-                        Toast.makeText(this, "Evento actualizado", Toast.LENGTH_SHORT).show();
-                        cargarEventos();
-                    });
-                });
-            })
-            .setNegativeButton("Cancelar", null)
-            .create()
-            .show();
     }
     
     @Override

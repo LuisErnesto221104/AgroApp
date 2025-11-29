@@ -1,4 +1,4 @@
-package com.example.agroapp;
+package com.example.agroapp.activity;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
+
+import com.example.agroapp.R;
 import com.google.android.material.textfield.TextInputEditText;
 import com.example.agroapp.dao.UsuarioDAO;
 import com.example.agroapp.database.DatabaseHelper;

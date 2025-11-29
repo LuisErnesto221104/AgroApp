@@ -1,107 +1,137 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:app="http://schemas.android.com/apk/res/auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background">
+    android:background="@color/background"
+    android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="20dp">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Estadísticas Generales"
-            android:textSize="20sp"
+            android:textSize="24sp"
             android:textStyle="bold"
             android:textColor="@color/primary"
-            android:layout_marginBottom="16dp"/>
+            android:layout_marginBottom="20dp"
+            android:fontFamily="sans-serif-medium"/>
 
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            app:cardElevation="4dp"
-            app:cardCornerRadius="8dp">
+            android:layout_marginBottom="20dp"
+            app:cardElevation="6dp"
+            app:cardCornerRadius="12dp"
+            app:cardBackgroundColor="?attr/colorSurface">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="16dp">
+                android:padding="20dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Inventario de Animales"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary"
+                    android:layout_marginBottom="16dp"
+                    android:fontFamily="sans-serif-medium"/>
 
                 <TextView
                     android:id="@+id/tvTotalAnimales"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Total de Animales: 0"
-                    android:textSize="16sp"
-                    android:layout_marginBottom="8dp"/>
+                    android:textSize="17sp"
+                    android:textColor="@color/text_primary"
+                    android:layout_marginBottom="12dp"
+                    android:drawablePadding="12dp"
+                    android:gravity="center_vertical"/>
 
                 <TextView
                     android:id="@+id/tvAnimalesSanos"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Animales Sanos: 0"
+                    android:text="✓ Animales Sanos: 0"
                     android:textSize="16sp"
                     android:textColor="@color/estado_sano"
-                    android:layout_marginBottom="8dp"/>
+                    android:layout_marginBottom="10dp"
+                    android:drawablePadding="12dp"
+                    android:gravity="center_vertical"/>
 
                 <TextView
                     android:id="@+id/tvAnimalesEnfermos"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Animales Enfermos: 0"
+                    android:text="⚠ Animales Enfermos: 0"
                     android:textSize="16sp"
                     android:textColor="@color/estado_enfermo"
-                    android:layout_marginBottom="8dp"/>
+                    android:layout_marginBottom="10dp"
+                    android:drawablePadding="12dp"
+                    android:gravity="center_vertical"/>
 
                 <TextView
                     android:id="@+id/tvAnimalesVendidos"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Animales Vendidos: 0"
+                    android:text="$ Animales Vendidos: 0"
                     android:textSize="16sp"
                     android:textColor="@color/estado_vendido"
-                    android:layout_marginBottom="8dp"/>
+                    android:layout_marginBottom="16dp"
+                    android:drawablePadding="12dp"
+                    android:gravity="center_vertical"/>
 
                 <View
                     android:layout_width="match_parent"
-                    android:layout_height="1dp"
+                    android:layout_height="2dp"
                     android:background="@color/divider"
-                    android:layout_marginVertical="8dp"/>
+                    android:layout_marginVertical="12dp"/>
 
                 <TextView
                     android:id="@+id/tvTotalGastos"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Total de Gastos: $0.00"
-                    android:textSize="18sp"
+                    android:textSize="20sp"
                     android:textStyle="bold"
                     android:textColor="@color/accent"
-                    android:layout_marginBottom="8dp"/>
+                    android:layout_marginBottom="10dp"
+                    android:fontFamily="sans-serif-medium"/>
 
                 <TextView
                     android:id="@+id/tvPromedioGastos"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Promedio por Animal: $0.00"
-                    android:textSize="16sp"/>
+                    android:textSize="17sp"
+                    android:textColor="@color/text_secondary"/>
 
             </LinearLayout>
 
         </androidx.cardview.widget.CardView>
 
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnGenerarPDF"
             android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:text="Generar Reporte PDF"
+            android:layout_height="64dp"
+            android:text="📄 Generar Reporte PDF"
             android:textSize="18sp"
-            android:backgroundTint="@color/primary"/>
+            android:textStyle="bold"
+            android:backgroundTint="@color/primary"
+            app:cornerRadius="12dp"
+            app:elevation="4dp"
+            app:icon="@android:drawable/ic_menu_save"
+            app:iconGravity="textStart"
+            app:iconPadding="8dp"/>
 
     </LinearLayout>
 

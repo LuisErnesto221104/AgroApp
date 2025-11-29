@@ -1,4 +1,4 @@
-package com.example.agroapp;
+package com.example.agroapp.activity;
 
 import android.content.Intent;
 import android.graphics.Color;
@@ -14,6 +14,8 @@ import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
+
+import com.example.agroapp.R;
 import com.example.agroapp.dao.AnimalDAO;
 import com.example.agroapp.dao.GastoDAO;
 import com.example.agroapp.database.DatabaseHelper;

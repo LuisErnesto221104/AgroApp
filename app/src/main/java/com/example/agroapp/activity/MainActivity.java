@@ -1,4 +1,4 @@
-package com.example.agroapp;
+package com.example.agroapp.activity;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -10,6 +10,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
+
+import com.example.agroapp.R;
 import com.example.agroapp.dao.AnimalDAO;
 import com.example.agroapp.dao.EventoSanitarioDAO;
 import com.example.agroapp.database.DatabaseHelper;

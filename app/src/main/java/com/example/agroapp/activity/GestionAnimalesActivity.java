@@ -1,4 +1,4 @@
-package com.example.agroapp;
+package com.example.agroapp.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -9,6 +9,8 @@ import android.widget.Spinner;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.agroapp.R;
 import com.example.agroapp.adapters.AnimalAdapter;
 import com.example.agroapp.dao.AnimalDAO;
 import com.example.agroapp.database.DatabaseHelper;

@@ -1,8 +1,10 @@
-package com.example.agroapp;
+package com.example.agroapp.activity;
 
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -13,6 +15,8 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.agroapp.R;
 import com.example.agroapp.dao.AnimalDAO;
 import com.example.agroapp.dao.GastoDAO;
 import com.example.agroapp.database.DatabaseHelper;
@@ -28,7 +32,7 @@ import java.util.concurrent.Executors;
 
 public class RegistroComprasActivity extends BaseActivity {
     
-    private EditText etNombreCompra, etPrecioTotal;
+    private EditText etNombreCompra, etPrecioTotal, etBuscarAnimal;
     private RadioGroup rgTipoCompra;
     private LinearLayout layoutAnimales;
     private TextView tvTotalPorAnimal;
@@ -37,6 +41,7 @@ public class RegistroComprasActivity extends BaseActivity {
     private AnimalDAO animalDAO;
     private GastoDAO gastoDAO;
     private List<Animal> animalesList;
+    private List<Animal> todosLosAnimales;
     private List<CheckBox> checkBoxes;
     private ExecutorService executorService;
     private Handler mainHandler;
@@ -66,6 +71,7 @@ public class RegistroComprasActivity extends BaseActivity {
     private void inicializarVistas() {
         etNombreCompra = findViewById(R.id.etNombreCompra);
         etPrecioTotal = findViewById(R.id.etPrecioTotal);
+        etBuscarAnimal = findViewById(R.id.etBuscarAnimal);
         rgTipoCompra = findViewById(R.id.rgTipoCompra);
         layoutAnimales = findViewById(R.id.layoutAnimales);
         tvTotalPorAnimal = findViewById(R.id.tvTotalPorAnimal);
@@ -77,6 +83,7 @@ public class RegistroComprasActivity extends BaseActivity {
     private void cargarAnimales() {
         executorService.execute(() -> {
             List<Animal> todosAnimales = animalDAO.obtenerTodos();
+            todosLosAnimales = new ArrayList<>();
             animalesList = new ArrayList<>();
             
             // Filtrar animales vendidos y muertos
@@ -84,36 +91,80 @@ public class RegistroComprasActivity extends BaseActivity {
                 if (animal.getEstado() != null && 
                     !animal.getEstado().equalsIgnoreCase("vendido") && 
                     !animal.getEstado().equalsIgnoreCase("muerto")) {
+                    todosLosAnimales.add(animal);
                     animalesList.add(animal);
                 }
             }
             
             mainHandler.post(() -> {
-                layoutAnimales.removeAllViews();
-                checkBoxes.clear();
-                
-                if (animalesList.isEmpty()) {
-                    TextView tvVacio = new TextView(this);
-                    tvVacio.setText("No hay animales disponibles para registrar compras");
-                    tvVacio.setPadding(16, 16, 16, 16);
-                    layoutAnimales.addView(tvVacio);
-                    return;
-                }
-                
-                for (Animal animal : animalesList) {
-                    CheckBox checkBox = new CheckBox(this);
-                    checkBox.setText(animal.getNumeroArete() + " - " + animal.getRaza());
-                    checkBox.setTag(animal.getId());
-                    checkBox.setOnCheckedChangeListener((buttonView, isChecked) -> calcularPorAnimal());
-                    
-                    checkBoxes.add(checkBox);
-                    layoutAnimales.addView(checkBox);
-                }
+                mostrarAnimales(animalesList);
             });
         });
     }
     
+    private void mostrarAnimales(List<Animal> animales) {
+        layoutAnimales.removeAllViews();
+        checkBoxes.clear();
+        
+        if (animales.isEmpty()) {
+            TextView tvVacio = new TextView(this);
+            tvVacio.setText("No hay animales que coincidan con la búsqueda");
+            tvVacio.setPadding(16, 16, 16, 16);
+            layoutAnimales.addView(tvVacio);
+            return;
+        }
+        
+        for (Animal animal : animales) {
+            CheckBox checkBox = new CheckBox(this);
+            checkBox.setText(animal.getNumeroArete() + " - " + animal.getRaza());
+            checkBox.setTag(animal.getId());
+            checkBox.setOnCheckedChangeListener((buttonView, isChecked) -> calcularPorAnimal());
+            
+            checkBoxes.add(checkBox);
+            layoutAnimales.addView(checkBox);
+        }
+    }
+    
+    private void filtrarAnimales(String query) {
+        if (todosLosAnimales == null) {
+            return;
+        }
+        
+        if (query == null || query.trim().isEmpty()) {
+            mostrarAnimales(todosLosAnimales);
+            return;
+        }
+        
+        String queryLower = query.toLowerCase().trim();
+        List<Animal> filtrados = new ArrayList<>();
+        
+        for (Animal animal : todosLosAnimales) {
+            String arete = animal.getNumeroArete().toLowerCase();
+            String raza = animal.getRaza().toLowerCase();
+            
+            if (arete.contains(queryLower) || raza.contains(queryLower)) {
+                filtrados.add(animal);
+            }
+        }
+        
+        mostrarAnimales(filtrados);
+    }
+    
     private void configurarListeners() {
+        // Listener para búsqueda de animales
+        etBuscarAnimal.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                filtrarAnimales(s.toString());
+            }
+            
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+        
         etPrecioTotal.setOnFocusChangeListener((v, hasFocus) -> {
             if (!hasFocus) {
                 calcularPorAnimal();

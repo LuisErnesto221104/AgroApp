@@ -8,7 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import androidx.core.app.NotificationCompat;
-import com.example.agroapp.CalendarioActivity;
+import com.example.agroapp.activity.CalendarioActivity;
 import com.example.agroapp.R;
 
 public class NotificationReceiver extends BroadcastReceiver {

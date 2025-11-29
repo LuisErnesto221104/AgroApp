@@ -30,7 +30,7 @@
         android:theme="@style/Theme.AgroApp">
         
         <activity
-            android:name=".LoginActivity"
+            android:name=".activity.LoginActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -38,18 +38,18 @@
             </intent-filter>
         </activity>
         
-        <activity android:name=".MainActivity" />
-        <activity android:name=".GestionAnimalesActivity" />
-        <activity android:name=".RegistroAnimalActivity" />
-        <activity android:name=".DetalleAnimalActivity" />
-        <activity android:name=".CalendarioActivity" />
-        <activity android:name=".EventosSanitariosActivity" />
-        <activity android:name=".HistorialClinicoActivity" />
-        <activity android:name=".GastosActivity" />
-        <activity android:name=".AlimentacionActivity" />
-        <activity android:name=".RegistroComprasActivity" />
-        <activity android:name=".ReportesActivity" />
-        <activity android:name=".RecomendacionesActivity" />
+        <activity android:name=".activity.MainActivity" />
+        <activity android:name=".activity.GestionAnimalesActivity" />
+        <activity android:name=".activity.RegistroAnimalActivity" />
+        <activity android:name=".activity.DetalleAnimalActivity" />
+        <activity android:name=".activity.CalendarioActivity" />
+        <activity android:name=".activity.EventosSanitariosActivity" />
+        <activity android:name=".activity.HistorialClinicoActivity" />
+        <activity android:name=".activity.GastosActivity" />
+        <activity android:name=".activity.AlimentacionActivity" />
+        <activity android:name=".activity.RegistroComprasActivity" />
+        <activity android:name=".activity.ReportesActivity" />
+        <activity android:name=".activity.RecomendacionesActivity" />
         
         <receiver android:name=".utils.NotificationReceiver"
             android:enabled="true"

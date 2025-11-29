@@ -1,4 +1,4 @@
-package com.example.agroapp;
+package com.example.agroapp.activity;
 
 import android.app.DatePickerDialog;
 import android.content.Intent;
@@ -21,6 +21,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
+
+import com.example.agroapp.R;
 import com.example.agroapp.dao.AnimalDAO;
 import com.example.agroapp.database.DatabaseHelper;
 import com.example.agroapp.models.Animal;

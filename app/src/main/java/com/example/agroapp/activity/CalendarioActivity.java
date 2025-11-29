@@ -1,8 +1,16 @@
-package com.example.agroapp;
+package com.example.agroapp.activity;
 
+import android.Manifest;
+import android.app.AlarmManager;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -11,10 +19,15 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.agroapp.R;
 import com.example.agroapp.adapters.EventoSanitarioAdapter;
 import com.example.agroapp.dao.AnimalDAO;
 import com.example.agroapp.dao.EventoSanitarioDAO;
@@ -39,6 +52,8 @@ public class CalendarioActivity extends BaseActivity {
     private AnimalDAO animalDAO;
     private List<EventoSanitario> todosLosEventos;
     
+    private ActivityResultLauncher<String> requestPermissionLauncher;
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -50,6 +65,19 @@ public class CalendarioActivity extends BaseActivity {
         DatabaseHelper dbHelper = DatabaseHelper.getInstance(this);
         eventoDAO = new EventoSanitarioDAO(dbHelper);
         animalDAO = new AnimalDAO(dbHelper);
+        
+        // Registrar launcher para permisos
+        requestPermissionLauncher = registerForActivityResult(
+            new ActivityResultContracts.RequestPermission(),
+            isGranted -> {
+                if (!isGranted) {
+                    Toast.makeText(this, "Se necesita el permiso de notificaciones para recibir recordatorios", 
+                        Toast.LENGTH_LONG).show();
+                }
+            });
+        
+        // Solicitar permisos necesarios
+        solicitarPermisos();
         
         recyclerView = findViewById(R.id.recyclerEventos);
         calendarView = findViewById(R.id.calendarView);
@@ -87,6 +115,33 @@ public class CalendarioActivity extends BaseActivity {
             @Override
             public void onNothingSelected(android.widget.AdapterView<?> parent) {}
         });
+    }
+    
+    private void solicitarPermisos() {
+        // Solicitar permiso de notificaciones para Android 13+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) 
+                != PackageManager.PERMISSION_GRANTED) {
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+            }
+        }
+        
+        // Verificar y solicitar permiso para alarmas exactas (Android 12+)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+            if (alarmManager != null && !alarmManager.canScheduleExactAlarms()) {
+                new AlertDialog.Builder(this)
+                    .setTitle("Permiso necesario")
+                    .setMessage("Para programar recordatorios exactos, necesitas habilitar el permiso de alarmas exactas en la configuración")
+                    .setPositiveButton("Configuración", (dialog, which) -> {
+                        Intent intent = new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM);
+                        intent.setData(Uri.parse("package:" + getPackageName()));
+                        startActivity(intent);
+                    })
+                    .setNegativeButton("Cancelar", null)
+                    .show();
+            }
+        }
     }
     
     private void cargarEventos(String filtro) {

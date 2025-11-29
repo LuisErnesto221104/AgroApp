@@ -1,4 +1,4 @@
-package com.example.agroapp;
+package com.example.agroapp.activity;
 
 import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
@@ -12,6 +12,8 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.agroapp.R;
 import com.example.agroapp.adapters.HistorialClinicoAdapter;
 import com.example.agroapp.dao.HistorialClinicoDAO;
 import com.example.agroapp.database.DatabaseHelper;
