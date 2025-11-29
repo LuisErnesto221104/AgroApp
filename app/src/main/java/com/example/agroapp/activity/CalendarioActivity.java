@@ -31,6 +31,7 @@ import com.example.agroapp.R;
 import com.example.agroapp.adapters.EventoSanitarioAdapter;
 import com.example.agroapp.dao.AnimalDAO;
 import com.example.agroapp.dao.EventoSanitarioDAO;
+import com.example.agroapp.dao.NotificacionDAO;
 import com.example.agroapp.database.DatabaseHelper;
 import com.example.agroapp.models.Animal;
 import com.example.agroapp.models.EventoSanitario;
@@ -44,12 +45,19 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+/**
+ * Activity para gestionar el calendario sanitario y eventos.
+ * Implementa RF009: Programa 3 notificaciones por evento (3 días antes, 1 día antes, mismo día).
+ */
 public class CalendarioActivity extends BaseActivity {
+    
+    private static final String TAG = "CalendarioActivity";
     
     private RecyclerView recyclerView;
     private CalendarView calendarView;
     private EventoSanitarioDAO eventoDAO;
     private AnimalDAO animalDAO;
+    private NotificacionDAO notificacionDAO;
     private List<EventoSanitario> todosLosEventos;
     
     private ActivityResultLauncher<String> requestPermissionLauncher;
@@ -65,6 +73,7 @@ public class CalendarioActivity extends BaseActivity {
         DatabaseHelper dbHelper = DatabaseHelper.getInstance(this);
         eventoDAO = new EventoSanitarioDAO(dbHelper);
         animalDAO = new AnimalDAO(dbHelper);
+        notificacionDAO = new NotificacionDAO(dbHelper);
         
         // Registrar launcher para permisos
         requestPermissionLauncher = registerForActivityResult(
@@ -132,7 +141,7 @@ public class CalendarioActivity extends BaseActivity {
             if (alarmManager != null && !alarmManager.canScheduleExactAlarms()) {
                 new AlertDialog.Builder(this)
                     .setTitle("Permiso necesario")
-                    .setMessage("Para programar recordatorios exactos, necesitas habilitar el permiso de alarmas exactas en la configuración")
+                    .setMessage("Para programar los 3 recordatorios (3 días antes, 1 día antes y el mismo día), necesitas habilitar el permiso de alarmas exactas en la configuración")
                     .setPositiveButton("Configuración", (dialog, which) -> {
                         Intent intent = new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM);
                         intent.setData(Uri.parse("package:" + getPackageName()));
@@ -257,8 +266,9 @@ public class CalendarioActivity extends BaseActivity {
                         fechaSeleccionada[0], horaSeleccionada[0],
                         etDescripcion.getText().toString(), costo, sdf);
                     
-                    Toast.makeText(this, "Evento creado para raza " + razaSeleccionada, 
-                        Toast.LENGTH_SHORT).show();
+                    // RF009: Informar al usuario sobre las 3 notificaciones programadas
+                    Toast.makeText(this, "Evento creado con 3 recordatorios (3 días antes, 1 día antes y el mismo día)", 
+                        Toast.LENGTH_LONG).show();
                     recreate();
                 }
             })
@@ -267,6 +277,10 @@ public class CalendarioActivity extends BaseActivity {
             .show();
     }
     
+    /**
+     * Crea un evento sanitario para una raza específica.
+     * RF009: Programa automáticamente 3 notificaciones (3 días antes, 1 día antes, mismo día).
+     */
     private void crearEventoPorRaza(String raza, String tipo, String fecha, String hora,
                                    String descripcion, double costo, SimpleDateFormat sdf) {
         EventoSanitario evento = new EventoSanitario();
@@ -282,12 +296,13 @@ public class CalendarioActivity extends BaseActivity {
         long eventoId = eventoDAO.insertarEvento(evento);
         evento.setId((int) eventoId);
         
-        // Programar notificación
+        // RF009: Programar las 3 notificaciones
         try {
             evento.setFechaEvento(sdf.parse(evento.getFechaProgramada()));
             NotificationHelper.programarNotificacion(this, evento);
+            Log.d(TAG, "RF009: 3 notificaciones programadas para evento " + eventoId);
         } catch (ParseException e) {
-            Log.e("CalendarioActivity", "Error al parsear fecha", e);
+            Log.e(TAG, "Error al parsear fecha", e);
         }
     }
     
@@ -306,12 +321,13 @@ public class CalendarioActivity extends BaseActivity {
         long eventoId = eventoDAO.insertarEvento(evento);
         evento.setId((int) eventoId);
         
-        // Programar notificación
+        // RF009: Programar las 3 notificaciones
         try {
             evento.setFechaEvento(sdf.parse(evento.getFechaProgramada()));
             NotificationHelper.programarNotificacion(this, evento);
+            Log.d(TAG, "RF009: 3 notificaciones programadas para evento " + eventoId);
         } catch (ParseException e) {
-            Log.e("CalendarioActivity", "Error parsing date", e);
+            Log.e(TAG, "Error parsing date", e);
         }
     }
     
@@ -325,8 +341,10 @@ public class CalendarioActivity extends BaseActivity {
                         evento.setEstado("Realizado");
                         evento.setFechaRealizada(new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Calendar.getInstance().getTime()));
                         eventoDAO.actualizarEvento(evento);
+                        // RF009: Cancelar las 3 notificaciones pendientes
                         NotificationHelper.cancelarNotificacion(this, evento.getId());
-                        Toast.makeText(this, "Evento actualizado", Toast.LENGTH_SHORT).show();
+                        notificacionDAO.cancelarNotificacionesEvento(evento.getId());
+                        Toast.makeText(this, "Evento actualizado y recordatorios cancelados", Toast.LENGTH_SHORT).show();
                         recreate();
                         break;
                     case 1:
@@ -335,10 +353,12 @@ public class CalendarioActivity extends BaseActivity {
                     case 2:
                         new AlertDialog.Builder(this)
                             .setTitle("Confirmar eliminación")
-                            .setMessage("¿Está seguro de eliminar este evento?")
+                            .setMessage("¿Está seguro de eliminar este evento? Se cancelarán los 3 recordatorios programados.")
                             .setPositiveButton("Eliminar", (d, w) -> {
-                                eventoDAO.eliminarEvento(evento.getId());
+                                // RF009: Cancelar las 3 notificaciones antes de eliminar
                                 NotificationHelper.cancelarNotificacion(this, evento.getId());
+                                notificacionDAO.eliminarNotificacionesEvento(evento.getId());
+                                eventoDAO.eliminarEvento(evento.getId());
                                 Toast.makeText(this, "Evento eliminado", Toast.LENGTH_SHORT).show();
                                 recreate();
                             })
@@ -446,16 +466,20 @@ public class CalendarioActivity extends BaseActivity {
                 
                 eventoDAO.actualizarEvento(evento);
                 
-                // Reprogramar notificación
+                // RF009: Reprogramar las 3 notificaciones (cancela las anteriores y programa nuevas)
                 try {
                     SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
                     evento.setFechaEvento(sdf.parse(evento.getFechaProgramada()));
-                    NotificationHelper.programarNotificacion(this, evento);
+                    // Limpiar registros anteriores de notificaciones
+                    notificacionDAO.eliminarNotificacionesEvento(evento.getId());
+                    // Reprogramar las 3 notificaciones
+                    NotificationHelper.reprogramarNotificacion(this, evento);
+                    Log.d(TAG, "RF009: 3 notificaciones reprogramadas para evento " + evento.getId());
                 } catch (ParseException e) {
-                    Log.e("CalendarioActivity", "Error parsing date", e);
+                    Log.e(TAG, "Error parsing date", e);
                 }
                 
-                Toast.makeText(this, "Evento actualizado", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Evento actualizado con 3 recordatorios reprogramados", Toast.LENGTH_SHORT).show();
                 recreate();
             })
             .setNegativeButton("Cancelar", null)
