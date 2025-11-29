@@ -1,0 +1,217 @@
+@startuml CU-Modulo-Financiero
+' =============================================================================
+' Diagrama de Casos de Uso - Módulo Financiero
+' Sistema de Gestión Ganadera AgroApp
+' Versión: 1.0
+' Estándar: UML 2.5
+' =============================================================================
+
+skinparam backgroundColor #FEFEFE
+skinparam actorBorderColor #41692a
+skinparam actorBackgroundColor #faf4de
+skinparam usecaseBorderColor #6d3e14
+skinparam usecaseBackgroundColor #faf4de
+skinparam packageBorderColor #c78f52
+skinparam packageBackgroundColor #FCE4EC
+skinparam arrowColor #6d3e14
+
+title Diagrama de Casos de Uso - Módulo Financiero\nCU-005: Registrar Gastos e Inversiones
+
+' =============================================================================
+' ACTORES
+' =============================================================================
+
+actor "Productor Ganadero" as Productor <<Usuario Principal>>
+actor "Base de Datos\nSQLite" as BD <<Sistema>>
+
+' =============================================================================
+' SISTEMA - MÓDULO FINANCIERO
+' =============================================================================
+
+rectangle "Módulo Financiero" {
+    
+    ' --- Caso de Uso Principal ---
+    usecase "CU-005:\nRegistrar Gastos\ne Inversiones" as UC005 #FCE4EC
+    
+    ' --- Subcasos de Uso - Operaciones ---
+    package "Operaciones de Gastos" as PkgOps #FCE4EC {
+        usecase "CU-005.1:\nRegistrar Nuevo\nGasto" as UC005_1
+        usecase "CU-005.2:\nConsultar Gastos\npor Animal" as UC005_2
+        usecase "CU-005.3:\nConsultar Gastos\npor Categoría" as UC005_3
+        usecase "CU-005.4:\nEditar Gasto" as UC005_4
+        usecase "CU-005.5:\nEliminar Gasto" as UC005_5
+    }
+    
+    ' --- Subcasos de Uso - Cálculos ---
+    package "Cálculos Financieros" as PkgCalc #F8BBD9 {
+        usecase "Calcular Inversión\nTotal por Animal" as UC_InvTotal
+        usecase "Calcular Total\nGeneral de Gastos" as UC_TotalGral
+        usecase "Calcular Promedio\nde Gastos" as UC_Promedio
+        usecase "Calcular Ganancia/\nPérdida" as UC_Ganancia
+    }
+    
+    ' --- Funciones de Soporte ---
+    package "Soporte" as PkgSoporte #F8BBD9 {
+        usecase "Seleccionar\nAnimal" as UC_SelAnimal
+        usecase "Seleccionar\nCategoría" as UC_SelCategoria
+        usecase "Ingresar\nMonto" as UC_Monto
+        usecase "Registrar\nFecha" as UC_Fecha
+    }
+}
+
+' =============================================================================
+' RELACIONES ACTOR-CASO DE USO
+' =============================================================================
+
+' Productor - Caso Principal
+Productor --> UC005
+
+' Productor - Operaciones
+Productor --> UC005_1
+Productor --> UC005_2
+Productor --> UC005_3
+Productor --> UC005_4
+Productor --> UC005_5
+
+' Base de datos
+UC005 --> BD
+
+' =============================================================================
+' RELACIONES ENTRE CASOS DE USO
+' =============================================================================
+
+' Descomposición del caso principal
+UC005 ..> UC005_1 : <<include>>
+UC005 ..> UC005_2 : <<include>>
+UC005 ..> UC005_3 : <<include>>
+UC005 ..> UC005_4 : <<include>>
+UC005 ..> UC005_5 : <<include>>
+
+' Inclusiones para Registrar Gasto
+UC005_1 ..> UC_SelCategoria : <<include>>
+UC005_1 ..> UC_Monto : <<include>>
+UC005_1 ..> UC_Fecha : <<include>>
+UC005_1 ..> UC_SelAnimal : <<extend>>
+
+' Inclusiones para Consultas
+UC005_2 ..> UC_InvTotal : <<include>>
+UC005_2 ..> UC_Ganancia : <<extend>>
+UC005_3 ..> UC_TotalGral : <<include>>
+UC005_3 ..> UC_Promedio : <<extend>>
+
+' Inclusiones para Editar
+UC005_4 ..> UC_SelCategoria : <<include>>
+UC005_4 ..> UC_Monto : <<include>>
+
+' Cálculos dependientes
+UC_Ganancia ..> UC_InvTotal : <<include>>
+
+' =============================================================================
+' NOTAS DESCRIPTIVAS
+' =============================================================================
+
+note right of UC005
+  **CU-005: Registrar Gastos e Inversiones**
+  
+  **Descripción:**
+  Permite el control financiero de las
+  inversiones realizadas en el ganado,
+  tanto generales como específicas por animal.
+  
+  **Funcionalidades:**
+  - Registro de gastos por categoría
+  - Asociación opcional con animales
+  - Cálculos automáticos
+  - Seguimiento de inversión total
+  
+  **Precondición:**
+  - Usuario autenticado (CU-001)
+  
+  **Postcondición:**
+  - Gasto registrado en BD
+  - Totales actualizados
+end note
+
+note bottom of UC_SelCategoria
+  **Categorías de Gasto:**
+  - Alimentación
+  - Medicamentos
+  - Vacunas
+  - Veterinario
+  - Transporte
+  - Equipamiento
+  - Otros
+end note
+
+note right of UC_InvTotal
+  **Fórmula:**
+  Inversión Total = 
+  Precio de Compra + 
+  Suma de Todos los Gastos
+  asociados al animal
+end note
+
+note right of UC_Ganancia
+  **Cálculo de Ganancia:**
+  
+  SI animal vendido:
+    Ganancia = Precio Venta - Inversión Total
+    
+  Resultado:
+    >= 0 → Ganancia
+    < 0 → Pérdida
+end note
+
+' =============================================================================
+' ESPECIFICACIÓN DE DATOS
+' =============================================================================
+
+note left of UC005_1
+  **Tabla: gastos**
+  - id INTEGER (PK)
+  - animal_id INTEGER (FK)
+  - tipo TEXT *
+  - descripcion TEXT
+  - monto REAL *
+  - fecha TEXT *
+  
+  * Campos obligatorios
+  
+  **Validaciones:**
+  - Monto > 0
+  - Fecha válida
+  - Tipo no vacío
+end note
+
+' =============================================================================
+' FLUJO PRINCIPAL
+' =============================================================================
+
+note bottom of PkgOps
+  **Flujo Principal - Registrar Gasto:**
+  1. Usuario selecciona "Nuevo Gasto"
+  2. Sistema muestra formulario
+  3. Usuario selecciona categoría
+  4. Usuario ingresa monto
+  5. Usuario (opcional) asocia animal
+  6. Usuario confirma registro
+  7. Sistema valida datos
+  8. Sistema guarda en BD
+  9. Sistema actualiza totales
+end note
+
+' =============================================================================
+' LEYENDA
+' =============================================================================
+
+legend right
+  |= Relación |= Significado |
+  | ---> | Asociación directa |
+  | ..> <<include>> | Inclusión obligatoria |
+  | ..> <<extend>> | Extensión opcional |
+  |= Color |= Tipo |
+  | #FCE4EC | Operaciones |
+  | #F8BBD9 | Cálculos y Soporte |
+endlegend
+
+@enduml

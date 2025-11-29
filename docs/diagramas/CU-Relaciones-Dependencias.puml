@@ -1,0 +1,286 @@
+@startuml CU-Relaciones-Dependencias
+' =============================================================================
+' Diagrama Detallado de Relaciones y Dependencias
+' Sistema de Gestión Ganadera AgroApp
+' Versión: 1.0
+' Estándar: UML 2.5
+' =============================================================================
+
+skinparam backgroundColor #FEFEFE
+skinparam actorBorderColor #41692a
+skinparam actorBackgroundColor #faf4de
+skinparam usecaseBorderColor #6d3e14
+skinparam usecaseBackgroundColor #faf4de
+skinparam packageBorderColor #c78f52
+skinparam arrowColor #6d3e14
+skinparam noteBorderColor #98a287
+
+title Diagrama Detallado de Relaciones y Dependencias\nSistema AgroApp - Vista de Arquitectura de Casos de Uso
+
+' =============================================================================
+' ACTORES DEL SISTEMA
+' =============================================================================
+
+actor "Productor\nGanadero" as Productor <<Principal>>
+actor "Usuario No\nRegistrado" as NuevoUsuario <<Secundario>>
+
+actor "Sistema de\nNotificaciones\nAndroid" as SistemaNot <<Sistema Externo>>
+actor "Sistema de\nArchivos\nAndroid" as SistemaArch <<Sistema Externo>>
+actor "Cámara del\nDispositivo" as Camara <<Hardware>>
+actor "SQLite\nDatabase" as BD <<Persistencia>>
+
+' =============================================================================
+' CASOS DE USO ORGANIZADOS POR CAPAS
+' =============================================================================
+
+rectangle "Sistema AgroApp" as SistemaAgroApp {
+    
+    ' =========================================================================
+    ' CAPA 1: AUTENTICACIÓN (Prerrequisito para todo)
+    ' =========================================================================
+    
+    package "CAPA 1: Autenticación" as Capa1 #E8F5E9 {
+        usecase "CU-001:\nAutenticarse en\nel Sistema" as UC001 #E8F5E9
+    }
+    
+    ' =========================================================================
+    ' CAPA 2: GESTIÓN BASE (Dependencias fundamentales)
+    ' =========================================================================
+    
+    package "CAPA 2: Gestión Base" as Capa2 #FFF3E0 {
+        usecase "CU-002:\nGestionar Animales\n(CRUD)" as UC002 #FFF3E0
+        
+        usecase "CU-008:\nGestionar\nNotificaciones" as UC008 #FFF8E1
+    }
+    
+    ' =========================================================================
+    ' CAPA 3: OPERACIONES DEPENDIENTES
+    ' =========================================================================
+    
+    package "CAPA 3: Operaciones Dependientes" as Capa3 #E3F2FD {
+        usecase "CU-003:\nRegistrar Evento\nSanitario" as UC003 #E3F2FD
+        
+        usecase "CU-004:\nGestionar Historial\nClínico" as UC004 #BBDEFB
+        
+        usecase "CU-005:\nRegistrar Gastos\ne Inversiones" as UC005 #FCE4EC
+        
+        usecase "CU-006:\nConsultar\nAlimentación" as UC006 #F3E5F5
+    }
+    
+    ' =========================================================================
+    ' CAPA 4: REPORTES Y CONSOLIDACIÓN
+    ' =========================================================================
+    
+    package "CAPA 4: Reportes" as Capa4 #E0F7FA {
+        usecase "CU-007:\nGenerar\nReportes" as UC007 #E0F7FA
+    }
+}
+
+' =============================================================================
+' RELACIONES DE ACTORES
+' =============================================================================
+
+' Actor principal
+Productor --> UC001
+Productor --> UC002
+Productor --> UC003
+Productor --> UC004
+Productor --> UC005
+Productor --> UC006
+Productor --> UC007
+Productor --> UC008
+
+' Actor secundario
+NuevoUsuario --> UC001 : registro
+
+' Actores de sistema
+SistemaNot --> UC008
+Camara --> UC002
+UC007 --> SistemaArch
+UC001 --> BD
+UC002 --> BD
+UC003 --> BD
+UC004 --> BD
+UC005 --> BD
+UC006 --> BD
+
+' =============================================================================
+' RELACIONES <<include>> - DEPENDENCIAS OBLIGATORIAS
+' =============================================================================
+
+' Todos requieren autenticación
+UC002 ..> UC001 : <<include>>\nPrerrequisito
+UC003 ..> UC001 : <<include>>\nPrerrequisito
+UC004 ..> UC001 : <<include>>\nPrerrequisito
+UC005 ..> UC001 : <<include>>\nPrerrequisito
+UC006 ..> UC001 : <<include>>\nPrerrequisito
+UC007 ..> UC001 : <<include>>\nPrerrequisito
+UC008 ..> UC001 : <<include>>\nPrerrequisito
+
+' Dependencias de animal
+UC003 ..> UC002 : <<include>>\nRequiere animal
+UC004 ..> UC002 : <<include>>\nRequiere animal
+UC006 ..> UC002 : <<include>>\nRequiere animal
+
+' Dependencias de reportes
+UC007 ..> UC002 : <<include>>\nDatos de animales
+UC007 ..> UC005 : <<include>>\nDatos financieros
+
+' =============================================================================
+' RELACIONES <<extend>> - FUNCIONALIDAD OPCIONAL
+' =============================================================================
+
+' Gastos puede asociarse opcionalmente a animal
+UC005 ..> UC002 : <<extend>>\nAsociación opcional
+
+' Notificaciones extienden eventos sanitarios
+UC008 ..> UC003 : <<extend>>\nRecordatorios
+
+' Historial puede generar evento sanitario
+UC004 ..> UC003 : <<extend>>\nTratamiento derivado
+
+' =============================================================================
+' NOTAS DE ARQUITECTURA
+' =============================================================================
+
+note top of Capa1
+  **CAPA 1 - Autenticación**
+  ━━━━━━━━━━━━━━━━━━━━━━
+  Punto de entrada obligatorio.
+  Todos los demás CU requieren
+  autenticación previa.
+  
+  Incluye:
+  - Login / Registro
+  - Gestión de sesión
+  - Timeout de seguridad
+end note
+
+note top of Capa2
+  **CAPA 2 - Gestión Base**
+  ━━━━━━━━━━━━━━━━━━━━━━
+  Casos de uso fundamentales
+  que son prerrequisito para
+  operaciones de Capa 3.
+  
+  CU-002: Base de datos de animales
+  CU-008: Sistema de notificaciones
+end note
+
+note right of Capa3
+  **CAPA 3 - Operaciones**
+  ━━━━━━━━━━━━━━━━━━━━━━
+  Operaciones que requieren
+  animales registrados.
+  
+  - Eventos sanitarios
+  - Historial clínico
+  - Control financiero
+  - Registro de alimentación
+end note
+
+note bottom of Capa4
+  **CAPA 4 - Reportes**
+  ━━━━━━━━━━━━━━━━━━━━━━
+  Consolidación de datos
+  de todas las capas.
+  
+  Genera reportes PDF
+  con estadísticas y
+  resúmenes del hato.
+end note
+
+' =============================================================================
+' MATRIZ DE DEPENDENCIAS
+' =============================================================================
+
+note right of SistemaAgroApp
+  **MATRIZ DE DEPENDENCIAS**
+  ═══════════════════════════════════════════════════════
+  
+  │ CU │ 001 │ 002 │ 003 │ 004 │ 005 │ 006 │ 007 │ 008 │
+  ├────┼─────┼─────┼─────┼─────┼─────┼─────┼─────┼─────┤
+  │001 │  -  │     │     │     │     │     │     │     │
+  │002 │  I  │  -  │     │     │     │     │     │     │
+  │003 │  I  │  I  │  -  │     │     │     │     │     │
+  │004 │  I  │  I  │  E  │  -  │     │     │     │     │
+  │005 │  I  │  E  │     │     │  -  │     │     │     │
+  │006 │  I  │  I  │     │     │     │  -  │     │     │
+  │007 │  I  │  I  │     │     │  I  │     │  -  │     │
+  │008 │  I  │     │  E  │     │     │     │     │  -  │
+  └────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┘
+  
+  I = <<include>> (Dependencia obligatoria)
+  E = <<extend>>  (Extensión opcional)
+  
+  ═══════════════════════════════════════════════════════
+end note
+
+' =============================================================================
+' FLUJO DE DATOS
+' =============================================================================
+
+note left of BD
+  **FLUJO DE DATOS**
+  ━━━━━━━━━━━━━━━━━━━
+  
+  CU-001 ──────┐
+               │
+  CU-002 ──┐   │
+           │   │
+  CU-003 ──┤   │
+           │   ▼
+  CU-004 ──┼───► SQLite
+           │     Database
+  CU-005 ──┤
+           │
+  CU-006 ──┘
+           
+           │
+           ▼
+       CU-007
+    (Consolidación)
+           │
+           ▼
+       PDF/Export
+end note
+
+' =============================================================================
+' LEYENDA COMPLETA
+' =============================================================================
+
+legend right
+  **LEYENDA DE RELACIONES UML 2.5**
+  ═════════════════════════════════════════════
+  
+  |= Símbolo |= Tipo |= Descripción |
+  | ───► | Asociación | Actor interactúa con CU |
+  | ···► <<include>> | Inclusión | Dependencia obligatoria |
+  | ···► <<extend>> | Extensión | Funcionalidad opcional |
+  | ───► | Generalización | Herencia de actores |
+  
+  **COLORES POR MÓDULO**
+  ═════════════════════════════════════════════
+  
+  |= Color |= Módulo |
+  | #E8F5E9 | Autenticación |
+  | #FFF3E0 | Gestión Animales |
+  | #E3F2FD | Sanitario |
+  | #FCE4EC | Financiero |
+  | #F3E5F5 | Alimentación |
+  | #E0F7FA | Reportes |
+  | #FFF8E1 | Notificaciones |
+  
+  **ACTORES**
+  ═════════════════════════════════════════════
+  
+  |= Estereotipo |= Descripción |
+  | <<Principal>> | Usuario directo del sistema |
+  | <<Secundario>> | Usuario con acceso limitado |
+  | <<Sistema Externo>> | Componente Android |
+  | <<Hardware>> | Dispositivo físico |
+  | <<Persistencia>> | Base de datos |
+  
+endlegend
+
+@enduml

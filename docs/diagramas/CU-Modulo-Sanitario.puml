@@ -1,0 +1,239 @@
+@startuml CU-Modulo-Sanitario
+' =============================================================================
+' Diagrama de Casos de Uso - Módulo Sanitario
+' Sistema de Gestión Ganadera AgroApp
+' Versión: 1.0
+' Estándar: UML 2.5
+' =============================================================================
+
+skinparam backgroundColor #FEFEFE
+skinparam actorBorderColor #41692a
+skinparam actorBackgroundColor #faf4de
+skinparam usecaseBorderColor #6d3e14
+skinparam usecaseBackgroundColor #faf4de
+skinparam packageBorderColor #0188a8
+skinparam packageBackgroundColor #E3F2FD
+skinparam arrowColor #6d3e14
+
+title Diagrama de Casos de Uso - Módulo Sanitario\nCU-003: Registrar Evento Sanitario | CU-004: Gestionar Historial Clínico
+
+' =============================================================================
+' ACTORES
+' =============================================================================
+
+actor "Productor Ganadero" as Productor <<Usuario Principal>>
+actor "Sistema de\nNotificaciones" as SistemaNot <<Sistema>>
+actor "Calendario del\nSistema" as Calendario <<Sistema>>
+actor "Base de Datos\nSQLite" as BD <<Sistema>>
+
+' =============================================================================
+' SISTEMA - MÓDULO SANITARIO
+' =============================================================================
+
+rectangle "Módulo Sanitario" {
+    
+    ' --- Caso de Uso: Calendario Sanitario ---
+    package "CU-003: Registrar Evento Sanitario" as PkgEvento #E3F2FD {
+        usecase "CU-003:\nRegistrar Evento\nSanitario" as UC003 #E3F2FD
+        
+        usecase "CU-003.1:\nProgramar\nVacunación" as UC003_1
+        usecase "CU-003.2:\nProgramar\nDesparasitación" as UC003_2
+        usecase "CU-003.3:\nProgramar\nVitaminas" as UC003_3
+        usecase "CU-003.4:\nMarcar Evento\ncomo Realizado" as UC003_4
+        usecase "CU-003.5:\nConsultar Eventos\nPendientes" as UC003_5
+        usecase "Seleccionar\nAnimal" as UC_SelAnimal1
+        usecase "Establecer\nRecordatorio" as UC_Recordatorio
+    }
+    
+    ' --- Caso de Uso: Historial Clínico ---
+    package "CU-004: Gestionar Historial Clínico" as PkgHistorial #BBDEFB {
+        usecase "CU-004:\nGestionar Historial\nClínico" as UC004 #BBDEFB
+        
+        usecase "CU-004.1:\nRegistrar\nEnfermedad" as UC004_1
+        usecase "CU-004.2:\nRegistrar\nTratamiento" as UC004_2
+        usecase "CU-004.3:\nRegistrar\nSíntomas" as UC004_3
+        usecase "CU-004.4:\nActualizar Estado\nTratamiento" as UC004_4
+        usecase "CU-004.5:\nConsultar\nHistorial" as UC004_5
+        usecase "Seleccionar\nAnimal" as UC_SelAnimal2
+        usecase "Agregar\nObservaciones" as UC_Observaciones
+    }
+}
+
+' =============================================================================
+' RELACIONES ACTOR-CASO DE USO
+' =============================================================================
+
+' Productor - Eventos Sanitarios
+Productor --> UC003
+Productor --> UC003_1
+Productor --> UC003_2
+Productor --> UC003_3
+Productor --> UC003_4
+Productor --> UC003_5
+
+' Productor - Historial Clínico
+Productor --> UC004
+Productor --> UC004_1
+Productor --> UC004_5
+
+' Sistemas externos
+SistemaNot --> UC_Recordatorio
+Calendario --> UC003
+UC003 --> BD
+UC004 --> BD
+
+' =============================================================================
+' RELACIONES ENTRE CASOS DE USO - CU-003
+' =============================================================================
+
+' Descomposición de Evento Sanitario
+UC003 ..> UC003_1 : <<include>>
+UC003 ..> UC003_2 : <<include>>
+UC003 ..> UC003_3 : <<include>>
+UC003 ..> UC003_4 : <<include>>
+UC003 ..> UC003_5 : <<include>>
+
+' Inclusiones comunes
+UC003_1 ..> UC_SelAnimal1 : <<include>>
+UC003_2 ..> UC_SelAnimal1 : <<include>>
+UC003_3 ..> UC_SelAnimal1 : <<include>>
+
+' Extensiones
+UC003_1 ..> UC_Recordatorio : <<extend>>
+UC003_2 ..> UC_Recordatorio : <<extend>>
+UC003_3 ..> UC_Recordatorio : <<extend>>
+
+' =============================================================================
+' RELACIONES ENTRE CASOS DE USO - CU-004
+' =============================================================================
+
+' Descomposición de Historial Clínico
+UC004 ..> UC004_1 : <<include>>
+UC004 ..> UC004_2 : <<include>>
+UC004 ..> UC004_3 : <<include>>
+UC004 ..> UC004_4 : <<include>>
+UC004 ..> UC004_5 : <<include>>
+
+' Inclusiones comunes
+UC004_1 ..> UC_SelAnimal2 : <<include>>
+UC004_2 ..> UC004_1 : <<include>>
+UC004_3 ..> UC004_1 : <<include>>
+
+' Extensiones
+UC004_2 ..> UC_Observaciones : <<extend>>
+UC004_4 ..> UC_Observaciones : <<extend>>
+
+' =============================================================================
+' RELACIONES ENTRE MÓDULOS
+' =============================================================================
+
+' Relación entre eventos y historial
+UC003_4 ..> UC004_2 : <<extend>>
+
+' =============================================================================
+' NOTAS DESCRIPTIVAS
+' =============================================================================
+
+note right of UC003
+  **CU-003: Registrar Evento Sanitario**
+  
+  **Descripción:**
+  Permite programar y gestionar eventos
+  del calendario sanitario para cada
+  animal del hato.
+  
+  **Tipos de Evento:**
+  - Vacunación
+  - Desparasitación
+  - Vitaminas
+  
+  **Estados del Evento:**
+  - Pendiente
+  - Realizado
+  
+  **Precondición:**
+  - Usuario autenticado
+  - Al menos un animal registrado
+end note
+
+note right of UC004
+  **CU-004: Gestionar Historial Clínico**
+  
+  **Descripción:**
+  Permite registrar y consultar el
+  historial médico de cada animal.
+  
+  **Información Registrada:**
+  - Enfermedades diagnosticadas
+  - Síntomas observados
+  - Tratamientos aplicados
+  - Estado del tratamiento
+  - Observaciones veterinarias
+  
+  **Precondición:**
+  - Usuario autenticado
+  - Animal seleccionado
+end note
+
+note bottom of UC_Recordatorio
+  **Notificaciones:**
+  - Se envían 1 día antes
+    del evento programado
+  - Notificación tipo push
+  - Badge visual en pantalla
+end note
+
+note bottom of UC004_4
+  **Estados del Tratamiento:**
+  - En curso
+  - Completado
+  - Suspendido
+end note
+
+' =============================================================================
+' ESPECIFICACIÓN DE DATOS
+' =============================================================================
+
+note left of PkgEvento
+  **Tabla: calendario_sanitario**
+  - id (PK)
+  - animal_id (FK) *
+  - tipo_evento *
+  - descripcion
+  - fecha_programada *
+  - fecha_realizada
+  - estado *
+  - recordatorio (boolean)
+  
+  * Campos obligatorios
+end note
+
+note left of PkgHistorial
+  **Datos del Historial:**
+  - id (PK)
+  - animal_id (FK) *
+  - enfermedad *
+  - sintomas
+  - tratamiento *
+  - estado_tratamiento
+  - fecha_registro *
+  - observaciones
+  
+  * Campos obligatorios
+end note
+
+' =============================================================================
+' LEYENDA
+' =============================================================================
+
+legend right
+  |= Relación |= Significado |
+  | ---> | Asociación directa |
+  | ..> <<include>> | Inclusión obligatoria |
+  | ..> <<extend>> | Extensión condicional |
+  |= Color |= Módulo |
+  | #E3F2FD | Eventos Sanitarios |
+  | #BBDEFB | Historial Clínico |
+endlegend
+
+@enduml
