@@ -1,0 +1,247 @@
+@startuml CU-Autenticacion
+' =============================================================================
+' Diagrama de Casos de Uso - Módulo de Autenticación
+' Sistema de Gestión Ganadera AgroApp
+' Versión: 1.0
+' Estándar: UML 2.5
+' =============================================================================
+
+skinparam backgroundColor #FEFEFE
+skinparam actorBorderColor #41692a
+skinparam actorBackgroundColor #faf4de
+skinparam usecaseBorderColor #6d3e14
+skinparam usecaseBackgroundColor #faf4de
+skinparam packageBorderColor #41692a
+skinparam packageBackgroundColor #E8F5E9
+skinparam arrowColor #6d3e14
+
+title Diagrama de Casos de Uso - Módulo de Autenticación\nCU-001: Autenticarse en el Sistema
+
+' =============================================================================
+' ACTORES
+' =============================================================================
+
+actor "Productor Ganadero" as Productor <<Usuario>>
+actor "Usuario No\nRegistrado" as NuevoUsuario <<Usuario>>
+actor "Base de Datos\nSQLite" as BD <<Sistema>>
+actor "SharedPreferences" as Prefs <<Sistema>>
+
+' =============================================================================
+' SISTEMA - MÓDULO DE AUTENTICACIÓN
+' =============================================================================
+
+rectangle "Módulo de Autenticación" {
+    
+    ' --- Caso de Uso Principal ---
+    usecase "CU-001:\nAutenticarse en\nel Sistema" as UC001 #E8F5E9
+    
+    ' --- Subcasos de Uso ---
+    package "Operaciones de Autenticación" as PkgAuth #E8F5E9 {
+        usecase "CU-001.1:\nIniciar Sesión" as UC001_1
+        usecase "CU-001.2:\nRegistrar Usuario" as UC001_2
+        usecase "CU-001.3:\nCerrar Sesión" as UC001_3
+        usecase "CU-001.4:\nReautenticar por\nTimeout" as UC001_4
+    }
+    
+    ' --- Validaciones ---
+    package "Validaciones de Seguridad" as PkgValid #C8E6C9 {
+        usecase "Validar Campos\nNo Vacíos" as UC_ValidCampos
+        usecase "Verificar Usuario\nExistente" as UC_VerifUsuario
+        usecase "Verificar\nContraseña" as UC_VerifPass
+        usecase "Verificar Timeout\nde Sesión" as UC_VerifTimeout
+    }
+    
+    ' --- Gestión de Sesión ---
+    package "Gestión de Sesión" as PkgSesion #C8E6C9 {
+        usecase "Guardar Sesión" as UC_GuardarSesion
+        usecase "Cargar Sesión" as UC_CargarSesion
+        usecase "Actualizar Tiempo\nde Actividad" as UC_ActualizarTiempo
+        usecase "Invalidar Sesión" as UC_InvalidarSesion
+    }
+}
+
+' =============================================================================
+' RELACIONES ACTOR-CASO DE USO
+' =============================================================================
+
+' Productor (usuario registrado)
+Productor --> UC001
+Productor --> UC001_1
+Productor --> UC001_3
+Productor --> UC001_4
+
+' Usuario no registrado
+NuevoUsuario --> UC001_2
+
+' Sistemas
+UC001 --> BD
+UC_GuardarSesion --> Prefs
+UC_CargarSesion --> Prefs
+UC_ActualizarTiempo --> Prefs
+
+' =============================================================================
+' RELACIONES ENTRE CASOS DE USO
+' =============================================================================
+
+' Descomposición del caso principal
+UC001 ..> UC001_1 : <<include>>
+UC001 ..> UC001_2 : <<include>>
+UC001 ..> UC001_3 : <<include>>
+UC001 ..> UC001_4 : <<include>>
+
+' --- Flujo de Inicio de Sesión ---
+UC001_1 ..> UC_ValidCampos : <<include>>
+UC001_1 ..> UC_VerifUsuario : <<include>>
+UC001_1 ..> UC_VerifPass : <<include>>
+UC001_1 ..> UC_GuardarSesion : <<include>>
+
+' --- Flujo de Registro ---
+UC001_2 ..> UC_ValidCampos : <<include>>
+UC001_2 ..> UC_VerifUsuario : <<include>>
+UC001_2 ..> UC_GuardarSesion : <<include>>
+
+' --- Flujo de Cerrar Sesión ---
+UC001_3 ..> UC_InvalidarSesion : <<include>>
+
+' --- Flujo de Reautenticación ---
+UC001_4 ..> UC_VerifTimeout : <<include>>
+UC001_4 ..> UC_VerifPass : <<include>>
+UC001_4 ..> UC_ActualizarTiempo : <<include>>
+
+' --- Gestión continua de sesión ---
+UC001_1 ..> UC_ActualizarTiempo : <<extend>>
+
+' =============================================================================
+' NOTAS DESCRIPTIVAS
+' =============================================================================
+
+note right of UC001
+  **CU-001: Autenticarse en el Sistema**
+  
+  **Descripción:**
+  Controla el acceso al sistema mediante
+  autenticación de usuario y contraseña.
+  
+  **Características:**
+  - Login con validación en BD
+  - Registro de nuevos usuarios
+  - Sesión persistente
+  - Timeout de seguridad (10 seg)
+  - Reautenticación automática
+  
+  **Precondición:**
+  - Aplicación instalada
+  
+  **Postcondición:**
+  - Sesión activa/inactiva
+  - Acceso permitido/denegado
+end note
+
+note right of UC001_1
+  **Flujo de Inicio de Sesión:**
+  
+  1. Usuario ingresa credenciales
+  2. Sistema valida campos no vacíos
+  3. Sistema busca usuario en BD
+  4. SI usuario existe:
+     - Verificar contraseña
+     - SI correcta: Guardar sesión
+     - SI incorrecta: Error
+  5. SI no existe: Sugerir registro
+end note
+
+note right of UC001_2
+  **Flujo de Registro:**
+  
+  1. Usuario ingresa datos
+  2. Sistema valida campos
+  3. Sistema verifica no duplicado
+  4. SI usuario no existe:
+     - Crear registro en BD
+     - Guardar sesión automática
+  5. SI ya existe: Error
+end note
+
+note bottom of UC001_4
+  **Timeout de Sesión:**
+  
+  - Tiempo límite: 10 segundos
+  - Al reanudar la app:
+    * Verificar tiempo inactivo
+    * Si > timeout: Solicitar contraseña
+    * Si <= timeout: Continuar
+  
+  **Algoritmo:**
+  diferencia = tiempoActual - ultimaActividad
+  SI diferencia > 10000ms:
+      mostrarDialogoContraseña()
+end note
+
+' =============================================================================
+' ESPECIFICACIÓN DE DATOS
+' =============================================================================
+
+note left of PkgAuth
+  **Tabla: usuarios**
+  - id INTEGER (PK)
+  - username TEXT (UNIQUE) *
+  - password TEXT *
+  - nombre TEXT
+  
+  * Campos obligatorios
+end note
+
+note left of PkgSesion
+  **SharedPreferences (AgroAppPrefs):**
+  - userId (int)
+  - userName (String)
+  - password (String)
+  - lastActivityTime (long)
+  
+  **Constantes:**
+  - SESSION_TIMEOUT = 10000 ms
+end note
+
+' =============================================================================
+' ESCENARIOS ALTERNATIVOS
+' =============================================================================
+
+note bottom of UC_VerifUsuario
+  **Escenarios:**
+  
+  **Login:**
+  - Usuario existe → Continuar
+  - No existe → "Use Registrar"
+  
+  **Registro:**
+  - Usuario no existe → Crear
+  - Ya existe → "Use Iniciar Sesión"
+end note
+
+note bottom of UC_VerifPass
+  **Verificación:**
+  
+  - Contraseña almacenada
+    (texto plano en SharedPrefs)
+  - Comparación directa
+  
+  **Resultado:**
+  - Match → Acceso concedido
+  - No match → "Contraseña incorrecta"
+end note
+
+' =============================================================================
+' LEYENDA
+' =============================================================================
+
+legend right
+  |= Relación |= Significado |
+  | ---> | Asociación directa |
+  | ..> <<include>> | Inclusión obligatoria |
+  | ..> <<extend>> | Extensión condicional |
+  |= Color |= Componente |
+  | #E8F5E9 | Operaciones principales |
+  | #C8E6C9 | Validaciones y Sesión |
+endlegend
+
+@enduml

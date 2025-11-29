@@ -1,0 +1,261 @@
+@startuml CU-Notificaciones
+' =============================================================================
+' Diagrama de Casos de Uso - Módulo de Notificaciones
+' Sistema de Gestión Ganadera AgroApp
+' Versión: 1.0
+' Estándar: UML 2.5
+' =============================================================================
+
+skinparam backgroundColor #FEFEFE
+skinparam actorBorderColor #41692a
+skinparam actorBackgroundColor #faf4de
+skinparam usecaseBorderColor #6d3e14
+skinparam usecaseBackgroundColor #faf4de
+skinparam packageBorderColor #c78f52
+skinparam packageBackgroundColor #FFF8E1
+skinparam arrowColor #6d3e14
+
+title Diagrama de Casos de Uso - Módulo de Notificaciones\nCU-008: Gestionar Notificaciones
+
+' =============================================================================
+' ACTORES
+' =============================================================================
+
+actor "Productor Ganadero" as Productor <<Usuario Principal>>
+actor "AlarmManager\nAndroid" as AlarmManager <<Sistema>>
+actor "NotificationManager\nAndroid" as NotifManager <<Sistema>>
+actor "Sistema\nOperativo" as SO <<Sistema>>
+
+' =============================================================================
+' SISTEMA - MÓDULO DE NOTIFICACIONES
+' =============================================================================
+
+rectangle "Módulo de Notificaciones" {
+    
+    ' --- Caso de Uso Principal ---
+    usecase "CU-008:\nGestionar\nNotificaciones" as UC008 #FFF8E1
+    
+    ' --- Subcasos de Uso ---
+    package "Gestión de Alarmas" as PkgAlarmas #FFF8E1 {
+        usecase "CU-008.1:\nProgramar\nRecordatorio" as UC008_1
+        usecase "CU-008.2:\nCancelar\nRecordatorio" as UC008_2
+        usecase "CU-008.3:\nReprogramar\nRecordatorio" as UC008_3
+    }
+    
+    package "Visualización" as PkgVisual #FFECB3 {
+        usecase "CU-008.4:\nMostrar\nNotificación Push" as UC008_4
+        usecase "CU-008.5:\nMostrar Badge\nde Eventos" as UC008_5
+        usecase "CU-008.6:\nConsultar\nEventos Próximos" as UC008_6
+    }
+    
+    package "Procesamiento" as PkgProc #FFECB3 {
+        usecase "Recibir\nBroadcast" as UC_Broadcast
+        usecase "Verificar Permiso\nNOTIFICATIONS" as UC_VerifPermiso
+        usecase "Verificar Permiso\nEXACT_ALARM" as UC_VerifAlarm
+        usecase "Calcular Fecha\nRecordatorio" as UC_CalcFecha
+    }
+    
+    package "Interacción Usuario" as PkgInteraccion #FFECB3 {
+        usecase "Abrir App desde\nNotificación" as UC_AbrirApp
+        usecase "Marcar como\nLeída" as UC_MarcarLeida
+        usecase "Ir a Evento\nRelacionado" as UC_IrEvento
+    }
+}
+
+' =============================================================================
+' RELACIONES ACTOR-CASO DE USO
+' =============================================================================
+
+' Productor
+Productor --> UC008
+Productor --> UC008_5
+Productor --> UC008_6
+Productor --> UC_AbrirApp
+Productor --> UC_IrEvento
+
+' Sistema Android
+AlarmManager --> UC_Broadcast
+UC008_1 --> AlarmManager
+UC008_2 --> AlarmManager
+UC008_3 --> AlarmManager
+
+NotifManager --> UC008_4
+UC008_4 --> NotifManager
+
+SO --> UC_VerifPermiso
+SO --> UC_VerifAlarm
+
+' =============================================================================
+' RELACIONES ENTRE CASOS DE USO
+' =============================================================================
+
+' Descomposición del caso principal
+UC008 ..> UC008_1 : <<include>>
+UC008 ..> UC008_2 : <<include>>
+UC008 ..> UC008_3 : <<include>>
+UC008 ..> UC008_4 : <<include>>
+UC008 ..> UC008_5 : <<include>>
+UC008 ..> UC008_6 : <<include>>
+
+' Programación de recordatorio
+UC008_1 ..> UC_VerifPermiso : <<include>>
+UC008_1 ..> UC_VerifAlarm : <<include>>
+UC008_1 ..> UC_CalcFecha : <<include>>
+
+' Flujo de notificación
+UC_Broadcast ..> UC008_4 : <<include>>
+UC008_4 ..> UC_AbrirApp : <<extend>>
+
+' Interacción post-notificación
+UC_AbrirApp ..> UC_IrEvento : <<extend>>
+UC_AbrirApp ..> UC_MarcarLeida : <<include>>
+
+' Reprogramación
+UC008_3 ..> UC008_2 : <<include>>
+UC008_3 ..> UC008_1 : <<include>>
+
+' Consulta de próximos eventos
+UC008_6 ..> UC008_5 : <<include>>
+
+' =============================================================================
+' NOTAS DESCRIPTIVAS
+' =============================================================================
+
+note right of UC008
+  **CU-008: Gestionar Notificaciones**
+  
+  **Descripción:**
+  Sistema de recordatorios automáticos
+  para eventos sanitarios del calendario.
+  
+  **Características:**
+  - Notificaciones push locales
+  - Recordatorio 1 día antes
+  - Badge visual de pendientes
+  - Alarmas exactas programadas
+  
+  **Precondición:**
+  - Usuario autenticado
+  - Permisos concedidos
+  - Evento sanitario programado
+end note
+
+note right of UC008_1
+  **Programar Recordatorio:**
+  
+  1. Obtener fecha del evento
+  2. Calcular fecha - 1 día
+  3. Verificar permisos
+  4. Crear PendingIntent
+  5. Programar AlarmManager
+     (setExactAndAllowWhileIdle)
+  6. Guardar referencia
+end note
+
+note bottom of UC_CalcFecha
+  **Cálculo de Fecha:**
+  
+  fechaRecordatorio = 
+    fechaEvento - 24 horas
+  
+  Hora predeterminada: 09:00 AM
+end note
+
+note right of UC008_4
+  **Notificación Push:**
+  
+  - Canal: "eventos_sanitarios"
+  - Prioridad: HIGH
+  - Icono: app_icon
+  - Título: "Recordatorio AgroApp"
+  - Contenido: Descripción evento
+  - Acción: Abrir DetalleEvento
+end note
+
+note bottom of UC008_5
+  **Badge de Eventos:**
+  
+  - Visible en MainActivity
+  - Muestra contador de pendientes
+  - Eventos próximos 7 días
+  - Actualización en tiempo real
+end note
+
+' =============================================================================
+' PERMISOS REQUERIDOS
+' =============================================================================
+
+note left of PkgAlarmas
+  **Permisos Android requeridos:**
+  
+  ```xml
+  <uses-permission 
+    android:name="android.permission
+    .POST_NOTIFICATIONS"/>
+  
+  <uses-permission 
+    android:name="android.permission
+    .SCHEDULE_EXACT_ALARM"/>
+  ```
+  
+  **Versiones:**
+  - POST_NOTIFICATIONS: API 33+
+  - SCHEDULE_EXACT_ALARM: API 31+
+end note
+
+' =============================================================================
+' COMPONENTES TÉCNICOS
+' =============================================================================
+
+note left of PkgProc
+  **Componentes Implementados:**
+  
+  - NotificationReceiver
+    (BroadcastReceiver)
+  - NotificationHelper (Manager)
+  - AlarmScheduler (Utilidad)
+  
+  **Manifest:**
+  ```xml
+  <receiver 
+    android:name=
+    ".NotificationReceiver"
+    android:exported="false"/>
+  ```
+end note
+
+' =============================================================================
+' FLUJO DE NOTIFICACIÓN
+' =============================================================================
+
+note bottom of PkgInteraccion
+  **Flujo Completo:**
+  
+  1. Usuario programa evento sanitario
+  2. Sistema calcula fecha recordatorio
+  3. Sistema programa alarma exacta
+  4. [Día anterior al evento]
+  5. AlarmManager dispara broadcast
+  6. NotificationReceiver recibe
+  7. Sistema muestra notificación
+  8. Usuario toca notificación
+  9. App abre en detalle del evento
+end note
+
+' =============================================================================
+' LEYENDA
+' =============================================================================
+
+legend right
+  |= Relación |= Significado |
+  | ---> | Asociación directa |
+  | ..> <<include>> | Inclusión obligatoria |
+  | ..> <<extend>> | Extensión opcional |
+  |= Actor |= Tipo |
+  | Productor | Usuario principal |
+  | AlarmManager | Sistema Android |
+  | NotificationManager | Sistema Android |
+  | SO | Sistema Operativo |
+endlegend
+
+@enduml
