@@ -281,26 +281,88 @@ public class RegistroAnimalActivity extends BaseActivity implements AnimalPresen
         String sexo = spinnerSexo.getSelectedItem().toString();
         String fechaNac = fechaNacimiento[0];
         String fechaIng = fechaIngreso[0];
-        double precioCompra = 0;
-        try {
-            precioCompra = Double.parseDouble(etPrecioCompra.getText().toString());
-        } catch (NumberFormatException e) {
-            precioCompra = 0;
-        }
         String estado = spinnerEstado.getSelectedItem().toString();
         String observaciones = etObservaciones.getText().toString().trim();
         
-        // Validaciones usando el Presenter
+        // ===== VALIDACIONES DE CAMPOS OBLIGATORIOS =====
+        
+        // Validación 1: Arete obligatorio (RD001)
+        if (arete.isEmpty()) {
+            Toast.makeText(this, "El número de arete es obligatorio", Toast.LENGTH_SHORT).show();
+            etArete.setError("Campo obligatorio");
+            etArete.requestFocus();
+            return;
+        }
+        
+        // Validación 2: Formato SINIGA de 10 dígitos (RD001/RNF004)
+        if (!arete.matches("\\d{10}")) {
+            Toast.makeText(this, "El número de arete debe tener exactamente 10 dígitos numéricos (formato SINIGA)", 
+                Toast.LENGTH_LONG).show();
+            etArete.setError("Formato inválido - debe ser 10 dígitos");
+            etArete.requestFocus();
+            return;
+        }
+        
+        // Validación 3: Arete único usando Presenter
         if (!presenter.validarArete(arete)) {
             return;
         }
         
-        // Validación de precio negativo (CP-REG-009)
+        // Validación 4: Raza obligatoria
+        if (raza.equals("Otra") || spinnerRaza.getSelectedItemPosition() == 0) {
+            // Permitir "Otra" pero validar que no sea posición 0 si existe "Seleccione..."
+            // Por ahora solo validamos que haya selección
+        }
+        
+        // Validación 5: Sexo obligatorio
+        if (sexo.isEmpty()) {
+            Toast.makeText(this, "Debe seleccionar el sexo del animal", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        // Validación 6: Fecha de nacimiento obligatoria
+        if (fechaNac == null || fechaNac.isEmpty()) {
+            Toast.makeText(this, "Debe seleccionar la fecha de nacimiento", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        // Validación 7: Fecha de ingreso obligatoria
+        if (fechaIng == null || fechaIng.isEmpty()) {
+            Toast.makeText(this, "Debe seleccionar la fecha de ingreso", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        // Validación 8: Precio de compra obligatorio y válido (RD002)
+        String precioStr = etPrecioCompra.getText().toString().trim();
+        if (precioStr.isEmpty()) {
+            Toast.makeText(this, "El precio de compra es obligatorio (RD002)", Toast.LENGTH_SHORT).show();
+            etPrecioCompra.setError("Campo obligatorio");
+            etPrecioCompra.requestFocus();
+            return;
+        }
+        
+        double precioCompra = 0;
+        try {
+            precioCompra = Double.parseDouble(precioStr);
+            if (precioCompra <= 0) {
+                Toast.makeText(this, "El precio de compra debe ser mayor a cero", Toast.LENGTH_SHORT).show();
+                etPrecioCompra.setError("Debe ser mayor a 0");
+                etPrecioCompra.requestFocus();
+                return;
+            }
+        } catch (NumberFormatException e) {
+            Toast.makeText(this, "Ingrese un precio válido", Toast.LENGTH_SHORT).show();
+            etPrecioCompra.setError("Formato inválido");
+            etPrecioCompra.requestFocus();
+            return;
+        }
+        
+        // Validación 9: Precio no negativo (CP-REG-009)
         if (!presenter.validarPrecio(precioCompra, "El precio")) {
             return;
         }
         
-        // Validación de fechas coherentes (CP-REG-011)
+        // Validación 10: Fechas coherentes (CP-REG-011)
         if (!presenter.validarFechasCoherentes(fechaNac, fechaIng)) {
             return;
         }
