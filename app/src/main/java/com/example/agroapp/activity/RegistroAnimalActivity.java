@@ -8,6 +8,8 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.MediaStore;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -26,6 +28,7 @@ import com.example.agroapp.R;
 import com.example.agroapp.dao.AnimalDAO;
 import com.example.agroapp.database.DatabaseHelper;
 import com.example.agroapp.models.Animal;
+import com.example.agroapp.presenter.AnimalPresenter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -34,7 +37,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
-public class RegistroAnimalActivity extends BaseActivity {
+public class RegistroAnimalActivity extends BaseActivity implements AnimalPresenter.AnimalView {
     
     private EditText etArete, etPrecioCompra, etObservaciones;
     private android.widget.Button btnFechaNacimiento, btnFechaAdquisicion;
@@ -42,6 +45,8 @@ public class RegistroAnimalActivity extends BaseActivity {
     private ImageView ivFotoAnimal;
     private Button btnSeleccionarFoto, btnTomarFoto, btnGuardar, btnCancelar;
     private AnimalDAO animalDAO;
+    private AnimalPresenter presenter;
+    private Handler mainHandler;
     private String modo;
     private int animalId;
     private String fotoBase64 = "";
@@ -66,6 +71,8 @@ public class RegistroAnimalActivity extends BaseActivity {
         
         DatabaseHelper dbHelper = DatabaseHelper.getInstance(this);
         animalDAO = new AnimalDAO(dbHelper);
+        mainHandler = new Handler(Looper.getMainLooper());
+        presenter = new AnimalPresenter(animalDAO, this);
         calendar = Calendar.getInstance();
         
         inicializarVistas();
@@ -109,9 +116,9 @@ public class RegistroAnimalActivity extends BaseActivity {
     }
     
     private void configurarSpinners() {
-        // Razas
-        String[] razas = {"Holstein", "Jersey", "Angus", "Hereford", "Brahman", "Charolais", 
-                         "Simmental", "Criollo", "Mestizo", "Otra"};
+        // Razas - Actualizadas según documentación técnica
+        String[] razas = {"Angus", "Hereford", "Brahman", "Charolais", "Simmental", 
+                         "Limousin", "Brangus", "Santa Gertrudis", "Holstein", "Jersey", "Otra"};
         ArrayAdapter<String> razaAdapter = new ArrayAdapter<>(this,
             android.R.layout.simple_spinner_dropdown_item, razas);
         spinnerRaza.setAdapter(razaAdapter);
@@ -250,9 +257,9 @@ public class RegistroAnimalActivity extends BaseActivity {
                     int newHeight = Math.round(height * ratio);
                     Bitmap resizedBitmap = Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true);
                     
-                    // Convertir a Base64
+                    // Convertir a Base64 - Compresión JPEG 70% según documentación técnica
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    resizedBitmap.compress(Bitmap.CompressFormat.JPEG, 80, baos);
+                    resizedBitmap.compress(Bitmap.CompressFormat.JPEG, 70, baos);
                     byte[] imageBytes = baos.toByteArray();
                     fotoBase64 = android.util.Base64.encodeToString(imageBytes, android.util.Base64.DEFAULT);
                     
@@ -283,18 +290,18 @@ public class RegistroAnimalActivity extends BaseActivity {
         String estado = spinnerEstado.getSelectedItem().toString();
         String observaciones = etObservaciones.getText().toString().trim();
         
-        if (arete.isEmpty()) {
-            Toast.makeText(this, "El número de arete es obligatorio", Toast.LENGTH_SHORT).show();
+        // Validaciones usando el Presenter
+        if (!presenter.validarArete(arete)) {
             return;
         }
         
-        if (arete.length() != 10) {
-            Toast.makeText(this, "El número de arete debe tener exactamente 10 caracteres", Toast.LENGTH_SHORT).show();
+        // Validación de precio negativo (CP-REG-009)
+        if (!presenter.validarPrecio(precioCompra, "Precio")) {
             return;
         }
         
-        if (!arete.matches("\\d{10}")) {
-            Toast.makeText(this, "El número de arete debe contener solo números (10 dígitos)", Toast.LENGTH_SHORT).show();
+        // Validación de fechas coherentes (CP-REG-011)
+        if (!presenter.validarFechasCoherentes(fechaNac, fechaIng)) {
             return;
         }
         
@@ -312,51 +319,49 @@ public class RegistroAnimalActivity extends BaseActivity {
         
         if (modo.equals("editar")) {
             animal.setId(animalId);
-            animalDAO.actualizarAnimal(animal);
-            Toast.makeText(this, "Animal actualizado correctamente", Toast.LENGTH_SHORT).show();
-        } else {
-            animalDAO.insertarAnimal(animal);
-            Toast.makeText(this, "Animal registrado correctamente", Toast.LENGTH_SHORT).show();
         }
         
-        finish();
+        // Operación asíncrona usando el Presenter (CP-REG-021)
+        presenter.guardarAnimal(animal, modo.equals("editar"));
     }
     
     private void cargarDatosAnimal() {
-        Animal animal = animalDAO.obtenerAnimalPorId(animalId);
-        if (animal != null) {
-            etArete.setText(animal.getNumeroArete());
-            fechaNacimiento[0] = animal.getFechaNacimiento();
-            fechaIngreso[0] = animal.getFechaIngreso();
-            btnFechaNacimiento.setText(animal.getFechaNacimiento());
-            btnFechaAdquisicion.setText(animal.getFechaIngreso());
-            etPrecioCompra.setText(String.valueOf(animal.getPrecioCompra()));
-            etObservaciones.setText(animal.getObservaciones());
-            
-            // Seleccionar valores en spinners
-            setSpinnerValue(spinnerRaza, animal.getRaza());
-            setSpinnerValue(spinnerSexo, animal.getSexo());
-            setSpinnerValue(spinnerEstado, animal.getEstado());
-            
-            // Bloquear cambio de estado si el animal está vendido o muerto
-            if (animal.getEstado() != null && 
-                (animal.getEstado().equalsIgnoreCase("vendido") || animal.getEstado().equalsIgnoreCase("muerto"))) {
-                spinnerEstado.setEnabled(false);
-                spinnerEstado.setAlpha(0.5f);
-            }
-            
-            // Cargar foto si existe
-            fotoBase64 = animal.getFoto() != null ? animal.getFoto() : "";
-            if (fotoBase64 != null && !fotoBase64.isEmpty()) {
-                try {
-                    byte[] decodedString = android.util.Base64.decode(fotoBase64, android.util.Base64.DEFAULT);
-                    Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
-                    ivFotoAnimal.setImageBitmap(decodedByte);
-                } catch (Exception e) {
-                    e.printStackTrace();
+        // Carga asíncrona usando el Presenter (CP-REG-021)
+        presenter.cargarAnimal(animalId, animal -> {
+            if (animal != null) {
+                etArete.setText(animal.getNumeroArete());
+                fechaNacimiento[0] = animal.getFechaNacimiento();
+                fechaIngreso[0] = animal.getFechaIngreso();
+                btnFechaNacimiento.setText(animal.getFechaNacimiento());
+                btnFechaAdquisicion.setText(animal.getFechaIngreso());
+                etPrecioCompra.setText(String.valueOf(animal.getPrecioCompra()));
+                etObservaciones.setText(animal.getObservaciones());
+                
+                // Seleccionar valores en spinners
+                setSpinnerValue(spinnerRaza, animal.getRaza());
+                setSpinnerValue(spinnerSexo, animal.getSexo());
+                setSpinnerValue(spinnerEstado, animal.getEstado());
+                
+                // Bloquear cambio de estado si el animal está vendido o muerto
+                if (animal.getEstado() != null && 
+                    (animal.getEstado().equalsIgnoreCase("vendido") || animal.getEstado().equalsIgnoreCase("muerto"))) {
+                    spinnerEstado.setEnabled(false);
+                    spinnerEstado.setAlpha(0.5f);
+                }
+                
+                // Cargar foto si existe
+                fotoBase64 = animal.getFoto() != null ? animal.getFoto() : "";
+                if (fotoBase64 != null && !fotoBase64.isEmpty()) {
+                    try {
+                        byte[] decodedString = android.util.Base64.decode(fotoBase64, android.util.Base64.DEFAULT);
+                        Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+                        ivFotoAnimal.setImageBitmap(decodedByte);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
             }
-        }
+        });
     }
     
     private void setSpinnerValue(Spinner spinner, String value) {
@@ -373,5 +378,34 @@ public class RegistroAnimalActivity extends BaseActivity {
     public boolean onSupportNavigateUp() {
         finish();
         return true;
+    }
+    
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (presenter != null) {
+            presenter.destruir();
+        }
+    }
+    
+    // Implementación de AnimalPresenter.AnimalView
+    @Override
+    public void mostrarError(String mensaje) {
+        Toast.makeText(this, mensaje, Toast.LENGTH_SHORT).show();
+    }
+    
+    @Override
+    public void mostrarExito(String mensaje) {
+        Toast.makeText(this, mensaje, Toast.LENGTH_SHORT).show();
+    }
+    
+    @Override
+    public void cerrarActividad() {
+        finish();
+    }
+    
+    @Override
+    public void ejecutarEnUIThread(Runnable runnable) {
+        mainHandler.post(runnable);
     }
 }
