@@ -296,7 +296,7 @@ public class RegistroAnimalActivity extends BaseActivity implements AnimalPresen
         }
         
         // Validación de precio negativo (CP-REG-009)
-        if (!presenter.validarPrecio(precioCompra, "Precio")) {
+        if (!presenter.validarPrecio(precioCompra, "El precio")) {
             return;
         }
         

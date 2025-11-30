@@ -55,23 +55,23 @@ public class AnimalPresenterTest {
     // CP-REG-009: Validación de precios negativos
     @Test
     public void testValidarPrecio_PrecioPositivo_RetornaTrue() {
-        boolean resultado = presenter.validarPrecio(100.50, "Precio");
+        boolean resultado = presenter.validarPrecio(100.50, "El precio");
         assertTrue(resultado);
         verify(mockView, never()).mostrarError(anyString());
     }
     
     @Test
     public void testValidarPrecio_PrecioCero_RetornaTrue() {
-        boolean resultado = presenter.validarPrecio(0, "Precio");
+        boolean resultado = presenter.validarPrecio(0, "El precio");
         assertTrue(resultado);
         verify(mockView, never()).mostrarError(anyString());
     }
     
     @Test
     public void testValidarPrecio_PrecioNegativo_RetornaFalse() {
-        boolean resultado = presenter.validarPrecio(-50.0, "Precio");
+        boolean resultado = presenter.validarPrecio(-50.0, "El precio");
         assertFalse(resultado);
-        verify(mockView).mostrarError("Precio debe ser 0 o positivo");
+        verify(mockView).mostrarError("El precio debe ser 0 o positivo");
     }
     
     // Validaciones de arete
