@@ -4,9 +4,7 @@ plugins {
 
 android {
     namespace = "com.example.agroapp"
-    compileSdk {
-        version = release(36)
-    }
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.agroapp"
@@ -41,6 +39,7 @@ dependencies {
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("androidx.coordinatorlayout:coordinatorlayout:1.2.0")
     testImplementation(libs.junit)
+    testImplementation("org.mockito:mockito-core:5.8.0")
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
 }

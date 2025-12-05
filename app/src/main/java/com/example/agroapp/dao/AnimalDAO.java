@@ -15,7 +15,29 @@ public class AnimalDAO {
         this.dbHelper = dbHelper;
     }
     
+    public boolean existeArete(String numeroArete) {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        Cursor cursor = db.query(
+            DatabaseHelper.TABLE_ANIMALES,
+            new String[]{DatabaseHelper.COL_ANIMAL_ID},
+            DatabaseHelper.COL_ANIMAL_ARETE + "=?",
+            new String[]{numeroArete},
+            null, null, null
+        );
+        
+        boolean existe = cursor != null && cursor.getCount() > 0;
+        if (cursor != null) {
+            cursor.close();
+        }
+        return existe;
+    }
+    
     public long insertarAnimal(Animal animal) {
+        // Verificar si ya existe un animal con el mismo arete
+        if (existeArete(animal.getNumeroArete())) {
+            return -1;
+        }
+        
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
         

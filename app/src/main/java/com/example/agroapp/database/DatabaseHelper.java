@@ -178,7 +178,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 TABLE_ANIMALES + "(" + COL_ANIMAL_ID + ") ON DELETE CASCADE)";
         db.execSQL(createAlimentacion);
         
-        // Insertar usuario por defecto
+        // Usuario por defecto del sistema (autogenerado en primera instalación)
+        // Credenciales: usuario='admin', contraseña='admin123', nombre='Administrador'
+        // Este usuario permite el acceso inicial antes de que se creen usuarios personalizados
         db.execSQL("INSERT INTO " + TABLE_USUARIOS + " (" + 
                 COL_USUARIO_USERNAME + ", " + COL_USUARIO_PASSWORD + ", " + COL_USUARIO_NOMBRE + 
                 ") VALUES ('admin', 'admin123', 'Administrador')");
