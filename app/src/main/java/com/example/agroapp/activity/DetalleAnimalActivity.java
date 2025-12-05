@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -69,9 +70,18 @@ public class DetalleAnimalActivity extends BaseActivity {
         
         animalId = getIntent().getIntExtra("animalId", -1);
         
+        // Performance logging (RNF001)
+        long startTime = System.currentTimeMillis();
+        
         inicializarVistas();
         cargarDatos();
         configurarListeners();
+        
+        // Measure loading time
+        long loadTime = System.currentTimeMillis() - startTime;
+        if (loadTime > 2000) {
+            Log.w("DetalleAnimal", "Tiempo de carga alto: " + loadTime + "ms (RNF001 requiere < 2s)");
+        }
     }
     
     private void inicializarVistas() {
@@ -141,7 +151,9 @@ public class DetalleAnimalActivity extends BaseActivity {
             tvFechaNacimiento.setText(animal.getFechaNacimiento() != null ? animal.getFechaNacimiento() : "-");
             tvFechaIngreso.setText(animal.getFechaIngreso() != null ? animal.getFechaIngreso() : "-");
             
-            // Investment
+            // Investment calculation (RD004)
+            // Formula: Inversión Total = Precio de Compra + Total de Gastos
+            // donde Total de Gastos incluye: alimentación, veterinario, medicinas, mantenimiento, etc.
             double precioCompra = animal.getPrecioCompra();
             double totalGastos = gastoDAO.obtenerTotalGastosPorAnimal(animalId);
             double inversionTotal = precioCompra + totalGastos;
@@ -287,15 +299,26 @@ public class DetalleAnimalActivity extends BaseActivity {
     }
     
     private void confirmarEliminacion() {
+        // Obtener el nombre del animal para el mensaje personalizado
+        Animal animal = animalDAO.obtenerAnimalPorId(animalId);
+        String nombreAnimal = animal != null ? animal.getNombre() : "este animal";
+        
         new AlertDialog.Builder(this)
-            .setTitle("Confirmar eliminación")
-            .setMessage("¿Está seguro de que desea eliminar este animal? Esta acción no se puede deshacer.")
-            .setPositiveButton("Eliminar", (dialog, which) -> {
+            .setTitle("⚠️ Confirmar Eliminación")
+            .setMessage("¿Está seguro de eliminar a " + nombreAnimal + "?\n\n" +
+                        "⚠️ ADVERTENCIA: Esta acción eliminará permanentemente:\n" +
+                        "• Todos los eventos sanitarios\n" +
+                        "• Todo el historial clínico\n" +
+                        "• Todos los registros de alimentación\n" +
+                        "• Todos los gastos asociados\n\n" +
+                        "Esta acción NO se puede deshacer.")
+            .setPositiveButton("Sí, eliminar", (dialog, which) -> {
                 animalDAO.eliminarAnimal(animalId);
-                Toast.makeText(this, "Animal eliminado", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Animal eliminado exitosamente", Toast.LENGTH_SHORT).show();
                 finish();
             })
             .setNegativeButton("Cancelar", null)
+            .setIcon(android.R.drawable.ic_dialog_alert)
             .show();
     }
     

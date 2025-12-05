@@ -241,14 +241,20 @@ public class CalendarioActivity extends BaseActivity {
         builder.setTitle("Nuevo Evento Sanitario")
             .setPositiveButton("Guardar", (dialog, which) -> {
                 if (razas.length > 0) {
+                    // Validación de costo mejorada
                     double costo = 0;
                     try {
                         String costoStr = etCosto.getText().toString().trim();
                         if (!costoStr.isEmpty()) {
                             costo = Double.parseDouble(costoStr);
+                            if (costo < 0) {
+                                Toast.makeText(this, "El costo no puede ser negativo", Toast.LENGTH_SHORT).show();
+                                return; // No cerrar el diálogo
+                            }
                         }
                     } catch (NumberFormatException e) {
-                        costo = 0;
+                        Toast.makeText(this, "Ingrese un costo válido (números decimales permitidos)", Toast.LENGTH_SHORT).show();
+                        return; // No cerrar el diálogo
                     }
                     
                     // Crear UN evento por raza
@@ -433,14 +439,20 @@ public class CalendarioActivity extends BaseActivity {
                 evento.setHoraRecordatorio(horaSeleccionada[0]);
                 evento.setDescripcion(etDescripcion.getText().toString());
                 
+                // Validación de costo mejorada
                 double costo = 0;
                 try {
                     String costoStr = etCosto.getText().toString().trim();
                     if (!costoStr.isEmpty()) {
                         costo = Double.parseDouble(costoStr);
+                        if (costo < 0) {
+                            Toast.makeText(this, "El costo no puede ser negativo", Toast.LENGTH_SHORT).show();
+                            return; // No cerrar el diálogo
+                        }
                     }
                 } catch (NumberFormatException e) {
-                    costo = 0;
+                    Toast.makeText(this, "Ingrese un costo válido (números decimales permitidos)", Toast.LENGTH_SHORT).show();
+                    return; // No cerrar el diálogo
                 }
                 evento.setCosto(costo);
                 
