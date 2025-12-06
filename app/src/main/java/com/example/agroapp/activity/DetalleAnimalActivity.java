@@ -43,7 +43,7 @@ public class DetalleAnimalActivity extends BaseActivity {
     
     private AnimalDAO animalDAO;
     private GastoDAO gastoDAO;
-    private int animalId;
+    private String animalArete;  // Usamos arete como identificador visible
     private Animal animal;
     private NumberFormat currencyFormatter;
     private ExecutorService executorService;
@@ -68,7 +68,7 @@ public class DetalleAnimalActivity extends BaseActivity {
         
         currencyFormatter = NumberFormat.getCurrencyInstance(new Locale.Builder().setLanguage("es").setRegion("MX").build());
         
-        animalId = getIntent().getIntExtra("animalId", -1);
+        animalArete = getIntent().getStringExtra("arete");
         
         // Performance logging (RNF001)
         long startTime = System.currentTimeMillis();
@@ -119,7 +119,7 @@ public class DetalleAnimalActivity extends BaseActivity {
     }
     
     private void cargarDatos() {
-        animal = animalDAO.obtenerAnimalPorId(animalId);
+        animal = animalDAO.obtenerAnimalPorArete(animalArete);
         if (animal != null) {
             // Header
             tvNombre.setText(animal.getNombre() != null ? animal.getNombre() : "Sin nombre");
@@ -261,25 +261,25 @@ public class DetalleAnimalActivity extends BaseActivity {
             // Configuración normal de listeners
             cardEventosSanitarios.setOnClickListener(v -> {
                 Intent intent = new Intent(this, EventosSanitariosActivity.class);
-                intent.putExtra("animalId", animalId);
+                intent.putExtra("arete", animalArete);
                 startActivity(intent);
             });
             
             cardHistorialClinico.setOnClickListener(v -> {
                 Intent intent = new Intent(this, HistorialClinicoActivity.class);
-                intent.putExtra("animalId", animalId);
+                intent.putExtra("arete", animalArete);
                 startActivity(intent);
             });
             
             cardGastos.setOnClickListener(v -> {
                 Intent intent = new Intent(this, GastosActivity.class);
-                intent.putExtra("animalId", animalId);
+                intent.putExtra("arete", animalArete);
                 startActivity(intent);
             });
             
             cardAlimentacion.setOnClickListener(v -> {
                 Intent intent = new Intent(this, AlimentacionActivity.class);
-                intent.putExtra("animalId", animalId);
+                intent.putExtra("arete", animalArete);
                 startActivity(intent);
             });
         }
@@ -287,7 +287,7 @@ public class DetalleAnimalActivity extends BaseActivity {
         btnEditar.setOnClickListener(v -> {
             Intent intent = new Intent(this, RegistroAnimalActivity.class);
             intent.putExtra("modo", "editar");
-            intent.putExtra("animalId", animalId);
+            intent.putExtra("arete", animalArete);
             startActivity(intent);
         });
         
@@ -300,7 +300,7 @@ public class DetalleAnimalActivity extends BaseActivity {
     
     private void confirmarEliminacion() {
         // Obtener el nombre del animal para el mensaje personalizado
-        Animal animal = animalDAO.obtenerAnimalPorId(animalId);
+        Animal animal = animalDAO.obtenerAnimalPorArete(animalArete);
         String nombreAnimal = animal != null ? animal.getNombre() : "este animal";
         
         new AlertDialog.Builder(this)
@@ -313,7 +313,7 @@ public class DetalleAnimalActivity extends BaseActivity {
                         "• Todos los gastos asociados\n\n" +
                         "Esta acción NO se puede deshacer.")
             .setPositiveButton("Sí, eliminar", (dialog, which) -> {
-                animalDAO.eliminarAnimal(animalId);
+                animalDAO.eliminarAnimalPorArete(animalArete);
                 Toast.makeText(this, "Animal eliminado exitosamente", Toast.LENGTH_SHORT).show();
                 finish();
             })
@@ -352,7 +352,7 @@ public class DetalleAnimalActivity extends BaseActivity {
                 double precioVenta = Double.parseDouble(precioStr);
                 
                 executorService.execute(() -> {
-                    Animal animal = animalDAO.obtenerAnimalPorId(animalId);
+                    Animal animal = animalDAO.obtenerAnimalPorArete(animalArete);
                     if (animal != null) {
                         animal.setEstado("Vendido");
                         animal.setFechaSalida(fechaVenta[0]);

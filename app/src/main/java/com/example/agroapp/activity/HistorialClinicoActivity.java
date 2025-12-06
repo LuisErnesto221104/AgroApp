@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.agroapp.R;
 import com.example.agroapp.adapters.HistorialClinicoAdapter;
+import com.example.agroapp.dao.AnimalDAO;
 import com.example.agroapp.dao.HistorialClinicoDAO;
 import com.example.agroapp.database.DatabaseHelper;
 import com.example.agroapp.models.HistorialClinico;
@@ -28,8 +29,10 @@ public class HistorialClinicoActivity extends BaseActivity {
     private RecyclerView recyclerView;
     private HistorialClinicoAdapter adapter;
     private HistorialClinicoDAO historialDAO;
+    private AnimalDAO animalDAO;
     private List<HistorialClinico> historialList;
-    private int animalId;
+    private int animalId;  // ID interno para consultas FK
+    private String animalArete;  // Arete recibido desde el intent
     
     @SuppressLint("MissingInflatedId")
     @Override
@@ -44,8 +47,15 @@ public class HistorialClinicoActivity extends BaseActivity {
         
         DatabaseHelper dbHelper = DatabaseHelper.getInstance(this);
         historialDAO = new HistorialClinicoDAO(dbHelper);
+        animalDAO = new AnimalDAO(dbHelper);
         
-        animalId = getIntent().getIntExtra("animalId", -1);
+        // Recibir arete y convertir a ID interno para consultas FK
+        animalArete = getIntent().getStringExtra("arete");
+        if (animalArete != null && !animalArete.isEmpty()) {
+            animalId = animalDAO.obtenerIdPorArete(animalArete);
+        } else {
+            animalId = -1;
+        }
         
         recyclerView = findViewById(R.id.recyclerHistorial);
         Button btnNuevo = findViewById(R.id.btnNuevoRegistro);

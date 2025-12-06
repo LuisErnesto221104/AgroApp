@@ -41,7 +41,8 @@ public class AlimentacionActivity extends BaseActivity {
     private RecyclerView recyclerView;
     private AlimentacionDAO alimentacionDAO;
     private AnimalDAO animalDAO;
-    private int animalIdFiltro = -1;
+    private int animalIdFiltro = -1;  // ID interno para consultas FK
+    private String animalAreteFiltro;  // Arete recibido desde el intent
     private ExecutorService executorService;
     private Handler mainHandler;
     
@@ -60,7 +61,13 @@ public class AlimentacionActivity extends BaseActivity {
         executorService = Executors.newSingleThreadExecutor();
         mainHandler = new Handler(Looper.getMainLooper());
         
-        animalIdFiltro = getIntent().getIntExtra("animalId", -1);
+        // Recibir arete y convertir a ID interno para consultas FK
+        animalAreteFiltro = getIntent().getStringExtra("arete");
+        if (animalAreteFiltro != null && !animalAreteFiltro.isEmpty()) {
+            animalIdFiltro = animalDAO.obtenerIdPorArete(animalAreteFiltro);
+        } else {
+            animalIdFiltro = -1;
+        }
         
         recyclerView = findViewById(R.id.recyclerAlimentacion);
         Button btnNuevo = findViewById(R.id.btnNuevoRegistro);

@@ -110,6 +110,68 @@ public class AnimalDAO {
         return animal;
     }
     
+    /**
+     * Obtiene un animal por su número de arete (identificador visible para el usuario)
+     * @param arete Número de arete SINIGA de 10 dígitos
+     * @return Animal encontrado o null si no existe
+     */
+    public Animal obtenerAnimalPorArete(String arete) {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        Animal animal = null;
+        
+        Cursor cursor = db.query(
+            DatabaseHelper.TABLE_ANIMALES,
+            null,
+            DatabaseHelper.COL_ANIMAL_ARETE + "=?",
+            new String[]{arete},
+            null, null, null
+        );
+        
+        if (cursor != null && cursor.moveToFirst()) {
+            animal = cursorToAnimal(cursor);
+            cursor.close();
+        }
+        
+        return animal;
+    }
+    
+    /**
+     * Obtiene el ID interno de un animal dado su arete
+     * @param arete Número de arete SINIGA
+     * @return ID interno del animal o -1 si no existe
+     */
+    public int obtenerIdPorArete(String arete) {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        int id = -1;
+        
+        Cursor cursor = db.query(
+            DatabaseHelper.TABLE_ANIMALES,
+            new String[]{DatabaseHelper.COL_ANIMAL_ID},
+            DatabaseHelper.COL_ANIMAL_ARETE + "=?",
+            new String[]{arete},
+            null, null, null
+        );
+        
+        if (cursor != null && cursor.moveToFirst()) {
+            id = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ANIMAL_ID));
+            cursor.close();
+        }
+        
+        return id;
+    }
+    
+    /**
+     * Elimina un animal por su número de arete
+     * @param arete Número de arete SINIGA
+     * @return Número de filas afectadas
+     */
+    public int eliminarAnimalPorArete(String arete) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        return db.delete(DatabaseHelper.TABLE_ANIMALES,
+            DatabaseHelper.COL_ANIMAL_ARETE + "=?",
+            new String[]{arete});
+    }
+    
     public List<Animal> obtenerTodosLosAnimales() {
         List<Animal> animales = new ArrayList<>();
         SQLiteDatabase db = dbHelper.getReadableDatabase();

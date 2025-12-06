@@ -134,6 +134,18 @@ public class AnimalPresenter {
         });
     }
     
+    /**
+     * Carga un animal por su número de arete (identificador visible para el usuario)
+     * @param arete Número de arete SINIGA
+     * @param callback Callback con el animal cargado
+     */
+    public void cargarAnimalPorArete(String arete, CargarAnimalCallback callback) {
+        executorService.execute(() -> {
+            Animal animal = animalDAO.obtenerAnimalPorArete(arete);
+            view.ejecutarEnUIThread(() -> callback.onAnimalCargado(animal));
+        });
+    }
+    
     public interface CargarAnimalCallback {
         void onAnimalCargado(Animal animal);
     }

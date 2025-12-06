@@ -48,7 +48,7 @@ public class RegistroAnimalActivity extends BaseActivity implements AnimalPresen
     private AnimalPresenter presenter;
     private Handler mainHandler;
     private String modo;
-    private int animalId;
+    private String animalArete;  // Usamos arete como identificador visible
     private String fotoBase64 = "";
     private Calendar calendar;
     private final String[] fechaNacimiento = {""};
@@ -80,9 +80,9 @@ public class RegistroAnimalActivity extends BaseActivity implements AnimalPresen
         
         modo = getIntent().getStringExtra("modo");
         if (modo == null) modo = "nuevo";
-        animalId = getIntent().getIntExtra("animalId", -1);
+        animalArete = getIntent().getStringExtra("arete");
         
-        if (modo.equals("editar") && animalId != -1) {
+        if (modo.equals("editar") && animalArete != null && !animalArete.isEmpty()) {
             if (getSupportActionBar() != null) {
                 getSupportActionBar().setTitle("Editar Animal");
             }
@@ -405,7 +405,9 @@ public class RegistroAnimalActivity extends BaseActivity implements AnimalPresen
         animal.setPesoActual(pesoActual);
         
         if (modo.equals("editar")) {
-            animal.setId(animalId);
+            // Obtener ID interno a partir del arete para la actualización
+            int idInterno = animalDAO.obtenerIdPorArete(animalArete);
+            animal.setId(idInterno);
         }
         
         // Operación asíncrona usando el Presenter (CP-REG-021)
@@ -414,7 +416,7 @@ public class RegistroAnimalActivity extends BaseActivity implements AnimalPresen
     
     private void cargarDatosAnimal() {
         // Carga asíncrona usando el Presenter (CP-REG-021)
-        presenter.cargarAnimal(animalId, animal -> {
+        presenter.cargarAnimalPorArete(animalArete, animal -> {
             if (animal != null) {
                 etArete.setText(animal.getNumeroArete());
                 fechaNacimiento[0] = animal.getFechaNacimiento();

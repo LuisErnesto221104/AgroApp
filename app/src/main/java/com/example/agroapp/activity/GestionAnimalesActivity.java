@@ -97,7 +97,7 @@ public class GestionAnimalesActivity extends BaseActivity {
         animalesListFull = new ArrayList<>(animalesList);
         adapter = new AnimalAdapter(this, animalesList, animal -> {
             Intent intent = new Intent(this, DetalleAnimalActivity.class);
-            intent.putExtra("animalId", animal.getId());
+            intent.putExtra("arete", animal.getNumeroArete());
             startActivity(intent);
         });
         recyclerView.setAdapter(adapter);

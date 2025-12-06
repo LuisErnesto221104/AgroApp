@@ -36,7 +36,8 @@ public class EventosSanitariosActivity extends BaseActivity {
     private EventoSanitarioDAO eventoDAO;
     private AnimalDAO animalDAO;
     private List<EventoSanitario> eventosList;
-    private int animalId;
+    private int animalId;  // ID interno para consultas FK
+    private String animalArete;  // Arete recibido desde el intent
     private ExecutorService executorService;
     private Handler mainHandler;
 
@@ -58,7 +59,13 @@ public class EventosSanitariosActivity extends BaseActivity {
         executorService = Executors.newSingleThreadExecutor();
         mainHandler = new Handler(Looper.getMainLooper());
 
-        animalId = getIntent().getIntExtra("animalId", -1);
+        // Recibir arete y convertir a ID interno para consultas FK
+        animalArete = getIntent().getStringExtra("arete");
+        if (animalArete != null && !animalArete.isEmpty()) {
+            animalId = animalDAO.obtenerIdPorArete(animalArete);
+        } else {
+            animalId = -1;
+        }
 
         recyclerView = findViewById(R.id.recyclerEventos);
         Button btnNuevo = findViewById(R.id.btnNuevoEvento);
