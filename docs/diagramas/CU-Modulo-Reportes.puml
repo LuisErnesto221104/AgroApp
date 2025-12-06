@@ -1,0 +1,255 @@
+@startuml CU-Modulo-Reportes
+' =============================================================================
+' Diagrama de Casos de Uso - Módulo de Reportes y Alimentación
+' Sistema de Gestión Ganadera AgroApp
+' Versión: 1.0
+' Estándar: UML 2.5
+' =============================================================================
+
+skinparam backgroundColor #FEFEFE
+skinparam actorBorderColor #41692a
+skinparam actorBackgroundColor #faf4de
+skinparam usecaseBorderColor #6d3e14
+skinparam usecaseBackgroundColor #faf4de
+skinparam packageBorderColor #0188a8
+skinparam packageBackgroundColor #E0F7FA
+skinparam arrowColor #6d3e14
+
+title Diagrama de Casos de Uso - Módulo Reportes y Alimentación\nCU-006: Consultar Alimentación | CU-007: Generar Reportes
+
+' =============================================================================
+' ACTORES
+' =============================================================================
+
+actor "Productor Ganadero" as Productor <<Usuario Principal>>
+actor "Sistema de\nArchivos" as SistArchivos <<Sistema>>
+actor "Generador PDF" as GenPDF <<Componente>>
+actor "Base de Datos\nSQLite" as BD <<Sistema>>
+
+' =============================================================================
+' SISTEMA - MÓDULO ALIMENTACIÓN
+' =============================================================================
+
+rectangle "Módulo de Reportes y Alimentación" {
+    
+    ' --- Caso de Uso: Alimentación ---
+    package "CU-006: Consultar Alimentación" as PkgAlim #F3E5F5 {
+        usecase "CU-006:\nConsultar\nAlimentación" as UC006 #F3E5F5
+        
+        usecase "CU-006.1:\nRegistrar\nAlimentación" as UC006_1
+        usecase "CU-006.2:\nConsultar Historial\nAlimentación" as UC006_2
+        usecase "CU-006.3:\nEditar Registro\nAlimentación" as UC006_3
+        usecase "CU-006.4:\nEliminar Registro" as UC006_4
+        
+        usecase "Seleccionar Tipo\nde Alimento" as UC_TipoAlim
+        usecase "Ingresar\nCantidad" as UC_Cantidad
+        usecase "Seleccionar\nUnidad de Medida" as UC_Unidad
+    }
+    
+    ' --- Caso de Uso: Reportes ---
+    package "CU-007: Generar Reportes" as PkgReportes #E0F7FA {
+        usecase "CU-007:\nGenerar Reportes" as UC007 #E0F7FA
+        
+        usecase "CU-007.1:\nGenerar Reporte\nGeneral del Hato" as UC007_1
+        usecase "CU-007.2:\nGenerar Reporte\nIndividual" as UC007_2
+        usecase "CU-007.3:\nGenerar Reporte\nFinanciero" as UC007_3
+        usecase "CU-007.4:\nGenerar Reporte\nSanitario" as UC007_4
+        
+        usecase "Calcular\nEstadísticas" as UC_Estadisticas
+        usecase "Exportar a\nPDF" as UC_ExportPDF
+        usecase "Guardar en\nDescargas" as UC_Guardar
+    }
+}
+
+' =============================================================================
+' RELACIONES ACTOR-CASO DE USO
+' =============================================================================
+
+' Productor - Alimentación
+Productor --> UC006
+Productor --> UC006_1
+Productor --> UC006_2
+
+' Productor - Reportes
+Productor --> UC007
+Productor --> UC007_1
+Productor --> UC007_2
+Productor --> UC007_3
+Productor --> UC007_4
+
+' Sistemas externos
+GenPDF --> UC_ExportPDF
+UC_Guardar --> SistArchivos
+UC006 --> BD
+UC007 --> BD
+
+' =============================================================================
+' RELACIONES - CU-006: ALIMENTACIÓN
+' =============================================================================
+
+' Descomposición
+UC006 ..> UC006_1 : <<include>>
+UC006 ..> UC006_2 : <<include>>
+UC006 ..> UC006_3 : <<include>>
+UC006 ..> UC006_4 : <<include>>
+
+' Inclusiones para Registrar
+UC006_1 ..> UC_TipoAlim : <<include>>
+UC006_1 ..> UC_Cantidad : <<include>>
+UC006_1 ..> UC_Unidad : <<include>>
+
+' Inclusiones para Editar
+UC006_3 ..> UC_Cantidad : <<include>>
+UC006_3 ..> UC_TipoAlim : <<include>>
+
+' =============================================================================
+' RELACIONES - CU-007: REPORTES
+' =============================================================================
+
+' Descomposición
+UC007 ..> UC007_1 : <<include>>
+UC007 ..> UC007_2 : <<include>>
+UC007 ..> UC007_3 : <<include>>
+UC007 ..> UC007_4 : <<include>>
+
+' Funcionalidades comunes
+UC007_1 ..> UC_Estadisticas : <<include>>
+UC007_2 ..> UC_Estadisticas : <<include>>
+UC007_3 ..> UC_Estadisticas : <<include>>
+UC007_4 ..> UC_Estadisticas : <<include>>
+
+' Exportación
+UC007_1 ..> UC_ExportPDF : <<extend>>
+UC007_2 ..> UC_ExportPDF : <<extend>>
+UC007_3 ..> UC_ExportPDF : <<extend>>
+UC007_4 ..> UC_ExportPDF : <<extend>>
+
+UC_ExportPDF ..> UC_Guardar : <<include>>
+
+' =============================================================================
+' NOTAS DESCRIPTIVAS
+' =============================================================================
+
+note right of UC006
+  **CU-006: Consultar Alimentación**
+  
+  **Descripción:**
+  Permite el control y registro de
+  la alimentación de cada animal.
+  
+  **Funcionalidades:**
+  - Registro de tipo de alimento
+  - Control de cantidades
+  - Historial por animal
+  - Múltiples unidades de medida
+  
+  **Precondición:**
+  - Usuario autenticado
+  - Animal registrado
+end note
+
+note right of UC007
+  **CU-007: Generar Reportes**
+  
+  **Descripción:**
+  Genera reportes y estadísticas
+  del hato ganadero en tiempo real.
+  
+  **Tipos de Reporte:**
+  - General del hato
+  - Individual por animal
+  - Financiero
+  - Sanitario
+  
+  **Formato de Salida:**
+  - PDF exportable
+  - Almacenamiento en Descargas
+  
+  **Precondición:**
+  - Usuario autenticado
+  - Datos existentes en sistema
+end note
+
+note bottom of UC_TipoAlim
+  **Tipos de Alimento:**
+  - Pasto
+  - Concentrado
+  - Heno
+  - Ensilaje
+  - Suplemento
+  - Sales minerales
+end note
+
+note bottom of UC_Unidad
+  **Unidades de Medida:**
+  - Kilogramos (kg)
+  - Libras (lb)
+  - Toneladas (t)
+  - Costales
+  - Pacas
+end note
+
+note right of UC_Estadisticas
+  **Estadísticas Calculadas:**
+  
+  - Total de animales activos
+  - Animales por estado
+  - Eventos sanitarios pendientes
+  - Vacunas próximas (7 días)
+  - Inversión total
+  - Ganancias/Pérdidas
+  - Promedios por categoría
+end note
+
+note bottom of UC_Guardar
+  **Ubicación de Guardado:**
+  /storage/emulated/0/Download/
+  
+  **Formato nombre archivo:**
+  Reporte_AgroApp_YYYYMMDD.pdf
+end note
+
+' =============================================================================
+' ESPECIFICACIÓN DE DATOS
+' =============================================================================
+
+note left of PkgAlim
+  **Datos de Alimentación:**
+  - id (PK)
+  - animal_id (FK) *
+  - tipo_alimento *
+  - cantidad *
+  - unidad_medida *
+  - fecha *
+  - observaciones
+  
+  * Campos obligatorios
+end note
+
+note left of PkgReportes
+  **Contenido del Reporte PDF:**
+  
+  1. Encabezado AgroApp
+  2. Fecha de generación
+  3. Resumen estadístico
+  4. Tabla de animales
+  5. Gráficos (si aplica)
+  6. Totales financieros
+  7. Pie de página
+end note
+
+' =============================================================================
+' LEYENDA
+' =============================================================================
+
+legend right
+  |= Relación |= Significado |
+  | ---> | Asociación directa |
+  | ..> <<include>> | Inclusión obligatoria |
+  | ..> <<extend>> | Extensión opcional |
+  |= Color |= Módulo |
+  | #F3E5F5 | Alimentación |
+  | #E0F7FA | Reportes |
+endlegend
+
+@enduml

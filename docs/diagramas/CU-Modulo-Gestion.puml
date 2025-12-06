@@ -1,0 +1,201 @@
+@startuml CU-Modulo-Gestion
+' =============================================================================
+' Diagrama de Casos de Uso - Módulo de Gestión de Animales
+' Sistema de Gestión Ganadera AgroApp
+' Versión: 1.0
+' Estándar: UML 2.5
+' =============================================================================
+
+skinparam backgroundColor #FEFEFE
+skinparam actorBorderColor #41692a
+skinparam actorBackgroundColor #faf4de
+skinparam usecaseBorderColor #6d3e14
+skinparam usecaseBackgroundColor #faf4de
+skinparam packageBorderColor #c78f52
+skinparam packageBackgroundColor #FFF3E0
+skinparam arrowColor #6d3e14
+
+title Diagrama de Casos de Uso - Módulo Gestión de Animales\nCU-002: Gestionar Animales (CRUD)
+
+' =============================================================================
+' ACTORES
+' =============================================================================
+
+actor "Productor Ganadero" as Productor <<Usuario Principal>>
+actor "Cámara del\nDispositivo" as Camara <<Hardware>>
+actor "Galería de\nImágenes" as Galeria <<Sistema>>
+actor "Base de Datos\nSQLite" as BD <<Sistema>>
+
+' =============================================================================
+' SISTEMA - MÓDULO DE GESTIÓN
+' =============================================================================
+
+rectangle "Módulo Gestión de Animales" {
+    
+    ' --- Caso de Uso Principal ---
+    usecase "CU-002:\nGestionar Animales\n(CRUD)" as UC002 #FFF3E0
+    
+    ' --- Subcasos de Uso ---
+    package "Operaciones CRUD" {
+        usecase "CU-002.1:\nRegistrar Animal" as UC002_1
+        usecase "CU-002.2:\nConsultar Animales" as UC002_2
+        usecase "CU-002.3:\nActualizar Animal" as UC002_3
+        usecase "CU-002.4:\nEliminar Animal" as UC002_4
+    }
+    
+    ' --- Casos de Uso de Soporte ---
+    package "Funciones de Soporte" {
+        usecase "Validar Número\nde Arete" as UC_ValidarArete
+        usecase "Capturar Foto\ncon Cámara" as UC_Camara
+        usecase "Seleccionar Foto\nde Galería" as UC_Galeria
+        usecase "Filtrar Animales\npor Estado" as UC_Filtrar
+        usecase "Buscar Animal\npor Arete/Raza" as UC_Buscar
+        usecase "Ver Detalle\nde Animal" as UC_Detalle
+    }
+    
+    ' --- Casos de Uso de Validación ---
+    package "Validaciones" {
+        usecase "Validar Campos\nObligatorios" as UC_ValidarCampos
+        usecase "Convertir Imagen\na Base64" as UC_ConvertirImg
+        usecase "Redimensionar\nImagen" as UC_Redimensionar
+    }
+}
+
+' =============================================================================
+' RELACIONES ACTOR-CASO DE USO
+' =============================================================================
+
+' Productor - Acciones principales
+Productor --> UC002
+Productor --> UC002_1
+Productor --> UC002_2
+Productor --> UC002_3
+Productor --> UC002_4
+
+' Productor - Funciones de soporte
+Productor --> UC_Filtrar
+Productor --> UC_Buscar
+Productor --> UC_Detalle
+
+' Actores de sistema
+Camara --> UC_Camara
+Galeria --> UC_Galeria
+UC002 --> BD
+
+' =============================================================================
+' RELACIONES ENTRE CASOS DE USO
+' =============================================================================
+
+' Descomposición del caso principal
+UC002 ..> UC002_1 : <<include>>
+UC002 ..> UC002_2 : <<include>>
+UC002 ..> UC002_3 : <<include>>
+UC002 ..> UC002_4 : <<include>>
+
+' Inclusiones para Registrar Animal
+UC002_1 ..> UC_ValidarArete : <<include>>
+UC002_1 ..> UC_ValidarCampos : <<include>>
+UC002_1 ..> UC_Camara : <<extend>>
+UC002_1 ..> UC_Galeria : <<extend>>
+
+' Procesamiento de imágenes
+UC_Camara ..> UC_ConvertirImg : <<include>>
+UC_Galeria ..> UC_ConvertirImg : <<include>>
+UC_ConvertirImg ..> UC_Redimensionar : <<include>>
+
+' Inclusiones para Consultar
+UC002_2 ..> UC_Filtrar : <<extend>>
+UC002_2 ..> UC_Buscar : <<extend>>
+UC002_2 ..> UC_Detalle : <<extend>>
+
+' Inclusiones para Actualizar
+UC002_3 ..> UC_ValidarArete : <<include>>
+UC002_3 ..> UC_ValidarCampos : <<include>>
+UC002_3 ..> UC_Camara : <<extend>>
+UC002_3 ..> UC_Galeria : <<extend>>
+
+' Inclusiones para Eliminar
+UC002_4 ..> UC_Detalle : <<include>>
+
+' =============================================================================
+' NOTAS DESCRIPTIVAS
+' =============================================================================
+
+note right of UC002
+  **Caso de Uso Principal**
+  
+  **Descripción:**
+  Permite la gestión completa del
+  inventario de animales mediante
+  operaciones CRUD.
+  
+  **Precondición:**
+  - Usuario autenticado (CU-001)
+  
+  **Postcondición:**
+  - Datos persistidos en SQLite
+end note
+
+note bottom of UC_ValidarArete
+  **Reglas de Validación:**
+  - Exactamente 10 caracteres
+  - Solo dígitos numéricos
+  - Formato: \d{10}
+  - Campo obligatorio
+end note
+
+note right of UC_ConvertirImg
+  **Procesamiento:**
+  - Redimensionar a máx 800px
+  - Comprimir JPEG al 80%
+  - Codificar en Base64
+end note
+
+note bottom of UC_Filtrar
+  **Estados disponibles:**
+  - Todos
+  - Sano
+  - Enfermo
+  - Vendido
+  - Muerto
+end note
+
+' =============================================================================
+' ESPECIFICACIÓN DE DATOS
+' =============================================================================
+
+note left of UC002_1
+  **Datos del Animal:**
+  - número_arete (10 dígitos) *
+  - nombre
+  - raza
+  - sexo
+  - fecha_nacimiento
+  - fecha_ingreso
+  - precio_compra
+  - precio_venta
+  - fecha_salida
+  - estado *
+  - observaciones
+  - foto (Base64)
+  
+  * Campos obligatorios
+end note
+
+' =============================================================================
+' LEYENDA
+' =============================================================================
+
+legend right
+  |= Relación |= Significado |
+  | ---> | Asociación directa |
+  | ..> <<include>> | Inclusión obligatoria |
+  | ..> <<extend>> | Extensión condicional |
+  |= Actor |= Tipo |
+  | Productor | Usuario principal |
+  | Cámara | Hardware del dispositivo |
+  | Galería | Sistema Android |
+  | BD SQLite | Persistencia local |
+endlegend
+
+@enduml
