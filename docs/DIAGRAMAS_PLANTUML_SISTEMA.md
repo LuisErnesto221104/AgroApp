@@ -603,15 +603,15 @@ P11 --> Conseq
 
 @enduml
 ```
-xs
 
 ---
 
 # DIAGRAMA 3: DIAGRAMA ENTIDAD-RELACIÓN
-## Notación UML - Base de Datos del Sistema AgroApp
+## Notación UML Estándar - Base de Datos del Sistema AgroApp
 
-> **Nota:** Este diagrama representa la estructura de la base de datos SQLite del sistema.
-> Utiliza notación UML estándar para diagramas de clases aplicado a entidades de base de datos.
+> **Nota:** Este diagrama representa la estructura de la base de datos SQLite.
+> En UML, las claves foráneas se representan mediante **asociaciones** entre clases,
+> no como atributos. La cardinalidad indica la multiplicidad de la relación.
 
 ```plantuml
 @startuml DiagramaEntidadRelacion
@@ -628,143 +628,112 @@ skinparam class {
     ArrowColor #0D47A1
 }
 
-title Diagrama Entidad-Relación\nBase de Datos AgroApp (agroapp.db)\n(Notación UML)
+title Diagrama Entidad-Relación\nBase de Datos AgroApp\n(Notación UML Estándar)
 
 ' ========================================
-' ENTIDADES (Tablas de la Base de Datos)
+' ENTIDADES
 ' ========================================
 
-class Usuario {
-    <u>id : INTEGER</u>
+class Usuario <<Entity>> {
+    + id : Integer <<PK>>
     --
-    nombre : TEXT {not null, unique}
-    password : TEXT {not null}
+    nombre : String <<unique, not null>>
+    password : String <<not null>>
 }
 
-class Animal {
-    <u>id : INTEGER</u>
+class Animal <<Entity>> {
+    + id : Integer <<PK>>
     --
-    numero_arete : TEXT {not null, unique}
-    nombre : TEXT
-    raza : TEXT {not null}
-    sexo : TEXT {not null}
-    fecha_nacimiento : TEXT
-    fecha_ingreso : TEXT
-    precio_compra : REAL
-    estado : TEXT {default 'ACTIVO'}
-    observaciones : TEXT
-    foto : TEXT
-    fecha_salida : TEXT
-    precio_venta : REAL
+    numero_arete : String <<unique, not null>>
+    nombre : String
+    raza : String <<not null>>
+    sexo : String <<not null>>
+    fecha_nacimiento : Date
+    fecha_ingreso : Date
+    precio_compra : Double
+    estado : String = "ACTIVO"
+    observaciones : String
+    foto : String
+    fecha_salida : Date
+    precio_venta : Double
 }
 
-class CalendarioSanitario {
-    <u>id : INTEGER</u>
+class CalendarioSanitario <<Entity>> {
+    + id : Integer <<PK>>
     --
-    # animal_id : INTEGER {FK}
-    tipo_evento : TEXT {not null}
-    descripcion : TEXT
-    fecha_programada : TEXT {not null}
-    hora_recordatorio : TEXT
-    estado : TEXT {default 'PENDIENTE'}
-    costo : REAL
-    fecha_realizado : TEXT
+    tipo_evento : String <<not null>>
+    descripcion : String
+    fecha_programada : Date <<not null>>
+    hora_recordatorio : Time
+    estado : String = "PENDIENTE"
+    costo : Double
+    fecha_realizado : Date
 }
 
-class HistorialClinico {
-    <u>id : INTEGER</u>
+class HistorialClinico <<Entity>> {
+    + id : Integer <<PK>>
     --
-    # animal_id : INTEGER {FK}
-    fecha : TEXT {not null}
-    diagnostico : TEXT
-    tratamiento : TEXT
-    veterinario : TEXT
-    observaciones : TEXT
-    costo : REAL
+    fecha : Date <<not null>>
+    diagnostico : String
+    tratamiento : String
+    veterinario : String
+    observaciones : String
+    costo : Double
 }
 
-class Gasto {
-    <u>id : INTEGER</u>
+class Gasto <<Entity>> {
+    + id : Integer <<PK>>
     --
-    # animal_id : INTEGER {FK}
-    tipo : TEXT {not null}
-    concepto : TEXT {not null}
-    monto : REAL {not null}
-    fecha : TEXT {not null}
-    observaciones : TEXT
+    tipo : String <<not null>>
+    concepto : String <<not null>>
+    monto : Double <<not null>>
+    fecha : Date <<not null>>
+    observaciones : String
 }
 
-class Alimentacion {
-    <u>id : INTEGER</u>
+class Alimentacion <<Entity>> {
+    + id : Integer <<PK>>
     --
-    # animal_id : INTEGER {FK}
-    tipo_alimento : TEXT {not null}
-    cantidad : REAL
-    unidad : TEXT
-    fecha : TEXT {not null}
-    costo : REAL
-    observaciones : TEXT
+    tipo_alimento : String <<not null>>
+    cantidad : Double
+    unidad : String
+    fecha : Date <<not null>>
+    costo : Double
+    observaciones : String
 }
 
 ' ========================================
-' RELACIONES (Foreign Keys)
+' ASOCIACIONES (Representan Foreign Keys)
 ' ========================================
 
-Animal "1" --o{ "0..*" CalendarioSanitario : tiene
-Animal "1" --o{ "0..*" HistorialClinico : posee
-Animal "1" --o{ "0..*" Gasto : genera
-Animal "1" --o{ "0..*" Alimentacion : registra
+Animal "1" *-- "0..*" CalendarioSanitario : tiene
+Animal "1" *-- "0..*" HistorialClinico : posee
+Animal "1" *-- "0..*" Gasto : genera
+Animal "1" *-- "0..*" Alimentacion : registra
 
 ' ========================================
-' LEYENDA UML
+' NOTAS UML
 ' ========================================
-
-legend right
-  **Notación UML para E-R**
-  |= Símbolo |= Significado |
-  | <u>atributo</u> | Clave Primaria (PK) |
-  | # atributo | Clave Foránea (FK) |
-  | {not null} | Campo obligatorio |
-  | {unique} | Valor único |
-  | {default 'X'} | Valor por defecto |
-  | {FK} | Foreign Key |
-  |  1  | Uno (cardinalidad) |
-  | 0..* | Cero a muchos |
-  | 1..* | Uno a muchos |
-  | --o{ | Composición (uno a muchos) |
-endlegend
-
-' ========================================
-' NOTAS
-' ========================================
-
-note top of Usuario
-  **Tabla: usuarios**
-  Almacena credenciales
-  de acceso al sistema.
-end note
 
 note top of Animal
-  **Tabla: animales**
-  Entidad central del sistema.
-  Almacena información completa
-  de cada cabeza de ganado.
+  **Entidad Central**
+  Todas las demás entidades
+  tienen composición hacia Animal.
+  ON DELETE CASCADE aplicado.
 end note
 
 note right of CalendarioSanitario
-  **Tabla: calendario_sanitario**
-  Eventos programados:
-  - Vacunaciones
-  - Desparasitaciones
-  - Vitaminaciones
-  - Revisiones
+  **Composición**
+  La línea con diamante negro
+  indica que si se elimina el
+  Animal, se eliminan sus
+  eventos sanitarios.
 end note
 
-note right of Gasto
-  **Tabla: gastos**
-  Control financiero por animal.
-  Permite calcular inversión
-  y rentabilidad.
+note bottom of Gasto
+  La FK animal_id se representa
+  mediante la asociación, no
+  como atributo de la clase.
 end note
 
 @enduml
@@ -772,11 +741,13 @@ end note
 
 ---
 
-## DIAGRAMA 3.1: DIAGRAMA E-R SIMPLIFICADO (Crow's Foot)
+## DIAGRAMA 3.1: DIAGRAMA E-R CON ASOCIACIONES NAVEGABLES
 
 ```plantuml
-@startuml DiagramaERSimplificado
+@startuml DiagramaERNavegable
 !theme plain
+skinparam classAttributeIconSize 0
+skinparam classFontSize 11
 skinparam linetype ortho
 skinparam backgroundColor #FEFEFE
 
@@ -785,89 +756,88 @@ skinparam class {
     BorderColor #8B4513
 }
 
-title Diagrama Entidad-Relación Simplificado\nSistema AgroApp\n(Notación UML - Vista de Cardinalidades)
+title Diagrama Entidad-Relación\nAsociaciones Navegables\n(Notación UML)
 
-hide methods
 hide circle
 
 ' ========================================
-' ENTIDADES SIMPLIFICADAS
+' ENTIDADES CON ATRIBUTOS CLAVE
 ' ========================================
 
 class Usuario {
-    id : PK
-    nombre
-    password
+    + id : Integer {PK}
+    nombre : String {unique}
+    password : String
 }
 
 class Animal {
-    id : PK
-    numero_arete : UK
-    nombre
-    raza
-    sexo
-    fecha_nacimiento
-    precio_compra
-    estado
-    foto
+    + id : Integer {PK}
+    numero_arete : String {unique}
+    nombre : String
+    raza : String
+    sexo : String
+    fecha_nacimiento : Date
+    precio_compra : Double
+    estado : String
+    foto : String
 }
 
 class CalendarioSanitario {
-    id : PK
-    animal_id : FK
-    tipo_evento
-    fecha_programada
-    estado
-    costo
+    + id : Integer {PK}
+    tipo_evento : String
+    fecha_programada : Date
+    estado : String
+    costo : Double
 }
 
 class HistorialClinico {
-    id : PK
-    animal_id : FK
-    fecha
-    diagnostico
-    tratamiento
-    veterinario
+    + id : Integer {PK}
+    fecha : Date
+    diagnostico : String
+    tratamiento : String
+    veterinario : String
 }
 
 class Gasto {
-    id : PK
-    animal_id : FK
-    tipo
-    concepto
-    monto
-    fecha
+    + id : Integer {PK}
+    tipo : String
+    concepto : String
+    monto : Double
+    fecha : Date
 }
 
 class Alimentacion {
-    id : PK
-    animal_id : FK
-    tipo_alimento
-    cantidad
-    fecha
-    costo
+    + id : Integer {PK}
+    tipo_alimento : String
+    cantidad : Double
+    fecha : Date
+    costo : Double
 }
 
 ' ========================================
-' RELACIONES CON CARDINALIDAD
+' ASOCIACIONES CON NOMBRES DE ROL
 ' ========================================
 
-Animal "1" -- "0..*" CalendarioSanitario : tiene >
-Animal "1" -- "0..*" HistorialClinico : posee >
-Animal "1" -- "0..*" Gasto : genera >
-Animal "1" -- "0..*" Alimentacion : registra >
+Animal "1" -- "0..*" CalendarioSanitario : eventos >
+Animal "1" -- "0..*" HistorialClinico : historial >
+Animal "1" -- "0..*" Gasto : gastos >
+Animal "1" -- "0..*" Alimentacion : alimentaciones >
 
 ' ========================================
-' LEYENDA
+' LEYENDA UML ESTÁNDAR
 ' ========================================
 
-legend bottom
-  |= Abreviatura |= Significado |
-  | PK | Primary Key (Clave Primaria) |
-  | FK | Foreign Key (Clave Foránea) |
-  | UK | Unique Key (Clave Única) |
-  | 1 | Exactamente uno |
-  | 0..* | Cero a muchos |
+legend right
+  **Notación UML**
+  |= Elemento |= Significado |
+  | + atributo | Visibilidad pública |
+  | {PK} | Primary Key (restricción) |
+  | {unique} | Valor único (restricción) |
+  | 1 | Multiplicidad: exactamente uno |
+  | 0..* | Multiplicidad: cero a muchos |
+  | -- | Asociación bidireccional |
+  | > | Dirección de navegabilidad |
+  | *-- | Composición (todo-parte) |
 endlegend
 
 @enduml
@@ -875,10 +845,10 @@ endlegend
 
 ---
 
-## DIAGRAMA 3.2: MODELO RELACIONAL - ESQUEMA DE TABLAS
+## DIAGRAMA 3.2: MODELO FÍSICO DE DATOS
 
 ```plantuml
-@startuml ModeloRelacional
+@startuml ModeloFisico
 !theme plain
 skinparam backgroundColor #FEFEFE
 skinparam defaultFontSize 10
@@ -886,141 +856,132 @@ skinparam defaultFontSize 10
 skinparam class {
     BackgroundColor #E8F5E9
     BorderColor #2E7D32
-    HeaderBackgroundColor #C8E6C9
 }
 
-title Modelo Relacional - Esquema de Tablas\nBase de Datos SQLite: agroapp.db
+title Modelo Físico de Datos\nBase de Datos SQLite: AgroApp.db\n(Notación UML para Bases de Datos)
 
 hide circle
-hide methods
 
 ' ========================================
-' TABLA USUARIOS
+' TABLAS COMO CLASES CON ESTEREOTIPO
 ' ========================================
 
-class "usuarios" as TUsuarios << (T,#AAFFAA) Table >> {
-    <b>id</b> : INTEGER PRIMARY KEY AUTOINCREMENT
-    ..
-    nombre : TEXT NOT NULL UNIQUE
-    password : TEXT NOT NULL
+class usuarios <<table>> {
+    «column» id : INTEGER {PK, auto_increment}
+    --
+    «column» username : TEXT {not null, unique}
+    «column» password : TEXT {not null}
+    «column» nombre : TEXT {not null}
+}
+
+class animales <<table>> {
+    «column» id : INTEGER {PK, auto_increment}
+    --
+    «column» numero_arete : TEXT {not null, unique}
+    «column» nombre : TEXT
+    «column» raza : TEXT
+    «column» sexo : TEXT
+    «column» fecha_nacimiento : TEXT
+    «column» fecha_ingreso : TEXT
+    «column» fecha_salida : TEXT
+    «column» precio_compra : REAL
+    «column» precio_venta : REAL
+    «column» foto : TEXT
+    «column» estado : TEXT
+    «column» observaciones : TEXT
+}
+
+class calendario_sanitario <<table>> {
+    «column» id : INTEGER {PK, auto_increment}
+    «column» animal_id : INTEGER {FK}
+    --
+    «column» raza : TEXT
+    «column» tipo : TEXT
+    «column» fecha_programada : TEXT
+    «column» fecha_realizada : TEXT
+    «column» descripcion : TEXT
+    «column» recordatorio : INTEGER
+    «column» estado : TEXT
+    «column» hora_recordatorio : TEXT
+    «column» costo : REAL
+}
+
+class historial_clinico <<table>> {
+    «column» id : INTEGER {PK, auto_increment}
+    «column» animal_id : INTEGER {FK}
+    --
+    «column» fecha : TEXT
+    «column» enfermedad : TEXT
+    «column» sintomas : TEXT
+    «column» tratamiento : TEXT
+    «column» estado : TEXT
+    «column» observaciones : TEXT
+}
+
+class gastos <<table>> {
+    «column» id : INTEGER {PK, auto_increment}
+    «column» animal_id : INTEGER {FK}
+    --
+    «column» raza : TEXT
+    «column» tipo : TEXT
+    «column» concepto : TEXT
+    «column» monto : REAL
+    «column» fecha : TEXT
+    «column» observaciones : TEXT
+}
+
+class alimentacion <<table>> {
+    «column» id : INTEGER {PK, auto_increment}
+    «column» animal_id : INTEGER {FK}
+    --
+    «column» tipo_alimento : TEXT
+    «column» cantidad : REAL
+    «column» unidad : TEXT
+    «column» fecha : TEXT
+    «column» observaciones : TEXT
+    «column» costo : REAL
 }
 
 ' ========================================
-' TABLA ANIMALES
+' RELACIONES FK (Referencias)
 ' ========================================
 
-class "animales" as TAnimales << (T,#AAFFAA) Table >> {
-    <b>id</b> : INTEGER PRIMARY KEY AUTOINCREMENT
-    ..
-    numero_arete : TEXT NOT NULL UNIQUE
-    nombre : TEXT
-    raza : TEXT NOT NULL
-    sexo : TEXT NOT NULL
-    fecha_nacimiento : TEXT
-    fecha_ingreso : TEXT
-    precio_compra : REAL DEFAULT 0
-    estado : TEXT DEFAULT 'ACTIVO'
-    observaciones : TEXT
-    foto : TEXT
-    fecha_salida : TEXT
-    precio_venta : REAL DEFAULT 0
-}
+animales "1" --o "0..*" calendario_sanitario : FK animal_id
+animales "1" --o "0..*" historial_clinico : FK animal_id
+animales "1" --o "0..*" gastos : FK animal_id
+animales "1" --o "0..*" alimentacion : FK animal_id
 
 ' ========================================
-' TABLA CALENDARIO_SANITARIO
+' NOTAS
 ' ========================================
 
-class "calendario_sanitario" as TCalendario << (T,#AAFFAA) Table >> {
-    <b>id</b> : INTEGER PRIMARY KEY AUTOINCREMENT
-    ..
-    <i>animal_id</i> : INTEGER NOT NULL → animales(id)
-    tipo_evento : TEXT NOT NULL
-    descripcion : TEXT
-    fecha_programada : TEXT NOT NULL
-    hora_recordatorio : TEXT
-    estado : TEXT DEFAULT 'PENDIENTE'
-    costo : REAL DEFAULT 0
-    fecha_realizado : TEXT
-}
+note top of animales
+  **Tabla Principal**
+  ON DELETE CASCADE en
+  todas las FK referenciadas
+end note
 
-' ========================================
-' TABLA HISTORIAL_CLINICO
-' ========================================
-
-class "historial_clinico" as THistorial << (T,#AAFFAA) Table >> {
-    <b>id</b> : INTEGER PRIMARY KEY AUTOINCREMENT
-    ..
-    <i>animal_id</i> : INTEGER NOT NULL → animales(id)
-    fecha : TEXT NOT NULL
-    diagnostico : TEXT
-    tratamiento : TEXT
-    veterinario : TEXT
-    observaciones : TEXT
-    costo : REAL DEFAULT 0
-}
-
-' ========================================
-' TABLA GASTOS
-' ========================================
-
-class "gastos" as TGastos << (T,#AAFFAA) Table >> {
-    <b>id</b> : INTEGER PRIMARY KEY AUTOINCREMENT
-    ..
-    <i>animal_id</i> : INTEGER NOT NULL → animales(id)
-    tipo : TEXT NOT NULL
-    concepto : TEXT NOT NULL
-    monto : REAL NOT NULL
-    fecha : TEXT NOT NULL
-    observaciones : TEXT
-}
-
-' ========================================
-' TABLA ALIMENTACION
-' ========================================
-
-class "alimentacion" as TAlimentacion << (T,#AAFFAA) Table >> {
-    <b>id</b> : INTEGER PRIMARY KEY AUTOINCREMENT
-    ..
-    <i>animal_id</i> : INTEGER NOT NULL → animales(id)
-    tipo_alimento : TEXT NOT NULL
-    cantidad : REAL
-    unidad : TEXT
-    fecha : TEXT NOT NULL
-    costo : REAL DEFAULT 0
-    observaciones : TEXT
-}
-
-' ========================================
-' RELACIONES (FOREIGN KEYS)
-' ========================================
-
-TAnimales "1" --o{ "0..*" TCalendario
-TAnimales "1" --o{ "0..*" THistorial
-TAnimales "1" --o{ "0..*" TGastos
-TAnimales "1" --o{ "0..*" TAlimentacion
+note right of calendario_sanitario
+  FOREIGN KEY (animal_id)
+  REFERENCES animales(id)
+  ON DELETE CASCADE
+end note
 
 ' ========================================
 ' LEYENDA
 ' ========================================
 
-legend right
-  **Convenciones**
-  |= Formato |= Significado |
-  | <b>campo</b> | Clave Primaria |
-  | <i>campo</i> | Clave Foránea |
-  | → tabla(campo) | Referencia FK |
-  | NOT NULL | Campo obligatorio |
-  | UNIQUE | Valor único |
-  | DEFAULT | Valor por defecto |
-  | (T) | Tabla |
+legend bottom
+  **Notación UML para Modelo Físico**
+  |= Símbolo |= Significado |
+  | <<table>> | Estereotipo de tabla |
+  | «column» | Estereotipo de columna |
+  | {PK} | Clave Primaria |
+  | {FK} | Clave Foránea |
+  | {auto_increment} | Autoincremental |
+  | --o | Agregación (FK sin CASCADE) |
+  | --* | Composición (FK con CASCADE) |
 endlegend
-
-note bottom of TAnimales
-  **Entidad Central**
-  Todas las demás tablas
-  tienen FK hacia animales.
-  ON DELETE CASCADE aplicado.
-end note
 
 @enduml
 ```

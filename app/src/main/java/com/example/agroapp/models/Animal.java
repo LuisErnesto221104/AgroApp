@@ -16,6 +16,8 @@ public class Animal {
     private String foto;
     private String estado;
     private String observaciones;
+    private double pesoNacer;
+    private double pesoActual;
     
     public Animal() {}
     
@@ -140,5 +142,21 @@ public class Animal {
     
     public void setObservaciones(String observaciones) {
         this.observaciones = observaciones;
+    }
+    
+    public double getPesoNacer() {
+        return pesoNacer;
+    }
+    
+    public void setPesoNacer(double pesoNacer) {
+        this.pesoNacer = pesoNacer;
+    }
+    
+    public double getPesoActual() {
+        return pesoActual;
+    }
+    
+    public void setPesoActual(double pesoActual) {
+        this.pesoActual = pesoActual;
     }
 }

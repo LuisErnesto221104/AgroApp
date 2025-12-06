@@ -1,0 +1,7 @@
+﻿@startuml test
+(*) --> [Proceso 1]
+[Proceso 1] --> <condicion>
+<condicion> --> [Si] [Proceso 2]
+<condicion> --> [No] [Proceso 3]
+[Proceso 2] --> (*)
+@enduml

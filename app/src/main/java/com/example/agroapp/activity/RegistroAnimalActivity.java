@@ -39,7 +39,7 @@ import java.util.Locale;
 
 public class RegistroAnimalActivity extends BaseActivity implements AnimalPresenter.AnimalView {
     
-    private EditText etArete, etPrecioCompra, etObservaciones;
+    private EditText etArete, etPrecioCompra, etObservaciones, etPesoNacer, etPesoActual;
     private android.widget.Button btnFechaNacimiento, btnFechaAdquisicion;
     private Spinner spinnerRaza, spinnerSexo, spinnerEstado;
     private ImageView ivFotoAnimal;
@@ -104,6 +104,8 @@ public class RegistroAnimalActivity extends BaseActivity implements AnimalPresen
         btnFechaNacimiento = findViewById(R.id.btnFechaNacimiento);
         btnFechaAdquisicion = findViewById(R.id.btnFechaAdquisicion);
         etPrecioCompra = findViewById(R.id.etPrecioCompra);
+        etPesoNacer = findViewById(R.id.etPesoNacer);
+        etPesoActual = findViewById(R.id.etPesoActual);
         etObservaciones = findViewById(R.id.etObservaciones);
         spinnerRaza = findViewById(R.id.spinnerRaza);
         spinnerSexo = findViewById(R.id.spinnerSexo);
@@ -367,6 +369,27 @@ public class RegistroAnimalActivity extends BaseActivity implements AnimalPresen
             return;
         }
         
+        // Obtener pesos (opcionales)
+        double pesoNacer = 0;
+        double pesoActual = 0;
+        String pesoNacerStr = etPesoNacer.getText().toString().trim();
+        String pesoActualStr = etPesoActual.getText().toString().trim();
+        
+        if (!pesoNacerStr.isEmpty()) {
+            try {
+                pesoNacer = Double.parseDouble(pesoNacerStr);
+            } catch (NumberFormatException e) {
+                // Ignorar si no es válido
+            }
+        }
+        if (!pesoActualStr.isEmpty()) {
+            try {
+                pesoActual = Double.parseDouble(pesoActualStr);
+            } catch (NumberFormatException e) {
+                // Ignorar si no es válido
+            }
+        }
+        
         Animal animal = new Animal();
         animal.setNumeroArete(arete);
         animal.setNombre(arete); // Usar arete como nombre
@@ -378,6 +401,8 @@ public class RegistroAnimalActivity extends BaseActivity implements AnimalPresen
         animal.setEstado(estado);
         animal.setObservaciones(observaciones);
         animal.setFoto(fotoBase64);
+        animal.setPesoNacer(pesoNacer);
+        animal.setPesoActual(pesoActual);
         
         if (modo.equals("editar")) {
             animal.setId(animalId);
@@ -397,6 +422,15 @@ public class RegistroAnimalActivity extends BaseActivity implements AnimalPresen
                 btnFechaNacimiento.setText(animal.getFechaNacimiento());
                 btnFechaAdquisicion.setText(animal.getFechaIngreso());
                 etPrecioCompra.setText(String.valueOf(animal.getPrecioCompra()));
+                
+                // Cargar pesos si existen
+                if (animal.getPesoNacer() > 0) {
+                    etPesoNacer.setText(String.valueOf(animal.getPesoNacer()));
+                }
+                if (animal.getPesoActual() > 0) {
+                    etPesoActual.setText(String.valueOf(animal.getPesoActual()));
+                }
+                
                 etObservaciones.setText(animal.getObservaciones());
                 
                 // Seleccionar valores en spinners

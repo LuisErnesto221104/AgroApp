@@ -7,7 +7,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class DatabaseHelper extends SQLiteOpenHelper {
     
     private static final String DATABASE_NAME = "AgroApp.db";
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 3;
     
     // Tabla Usuarios
     public static final String TABLE_USUARIOS = "usuarios";
@@ -31,6 +31,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String COL_ANIMAL_FOTO = "foto";
     public static final String COL_ANIMAL_ESTADO = "estado";
     public static final String COL_ANIMAL_OBSERVACIONES = "observaciones";
+    public static final String COL_ANIMAL_PESO_NACER = "peso_nacer";
+    public static final String COL_ANIMAL_PESO_ACTUAL = "peso_actual";
     
     // Tabla Calendario Sanitario
     public static final String TABLE_CALENDARIO_SANITARIO = "calendario_sanitario";
@@ -116,7 +118,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COL_ANIMAL_PRECIO_VENTA + " REAL, " +
                 COL_ANIMAL_FOTO + " TEXT, " +
                 COL_ANIMAL_ESTADO + " TEXT, " +
-                COL_ANIMAL_OBSERVACIONES + " TEXT)";
+                COL_ANIMAL_OBSERVACIONES + " TEXT, " +
+                COL_ANIMAL_PESO_NACER + " REAL, " +
+                COL_ANIMAL_PESO_ACTUAL + " REAL)";
         db.execSQL(createAnimales);
         
         // Crear tabla Calendario Sanitario
@@ -192,6 +196,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             // Migración de versión 1 a 2: agregar columna raza a calendario_sanitario y gastos
             db.execSQL("ALTER TABLE " + TABLE_CALENDARIO_SANITARIO + " ADD COLUMN " + COL_CALENDARIO_RAZA + " TEXT");
             db.execSQL("ALTER TABLE " + TABLE_GASTOS + " ADD COLUMN " + COL_GASTO_RAZA + " TEXT");
+        }
+        if (oldVersion < 3) {
+            // Migración de versión 2 a 3: agregar columnas de peso a animales
+            db.execSQL("ALTER TABLE " + TABLE_ANIMALES + " ADD COLUMN " + COL_ANIMAL_PESO_NACER + " REAL");
+            db.execSQL("ALTER TABLE " + TABLE_ANIMALES + " ADD COLUMN " + COL_ANIMAL_PESO_ACTUAL + " REAL");
         }
     }
     

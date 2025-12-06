@@ -53,6 +53,8 @@ public class AnimalDAO {
         values.put(DatabaseHelper.COL_ANIMAL_FOTO, animal.getFoto());
         values.put(DatabaseHelper.COL_ANIMAL_ESTADO, animal.getEstado());
         values.put(DatabaseHelper.COL_ANIMAL_OBSERVACIONES, animal.getObservaciones());
+        values.put(DatabaseHelper.COL_ANIMAL_PESO_NACER, animal.getPesoNacer());
+        values.put(DatabaseHelper.COL_ANIMAL_PESO_ACTUAL, animal.getPesoActual());
         
         return db.insert(DatabaseHelper.TABLE_ANIMALES, null, values);
     }
@@ -73,6 +75,8 @@ public class AnimalDAO {
         values.put(DatabaseHelper.COL_ANIMAL_FOTO, animal.getFoto());
         values.put(DatabaseHelper.COL_ANIMAL_ESTADO, animal.getEstado());
         values.put(DatabaseHelper.COL_ANIMAL_OBSERVACIONES, animal.getObservaciones());
+        values.put(DatabaseHelper.COL_ANIMAL_PESO_NACER, animal.getPesoNacer());
+        values.put(DatabaseHelper.COL_ANIMAL_PESO_ACTUAL, animal.getPesoActual());
         
         return db.update(DatabaseHelper.TABLE_ANIMALES, values,
             DatabaseHelper.COL_ANIMAL_ID + "=?",
@@ -155,20 +159,31 @@ public class AnimalDAO {
     }
     
     private Animal cursorToAnimal(Cursor cursor) {
-        return new Animal(
-            cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ANIMAL_ID)),
-            cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ANIMAL_ARETE)),
-            cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ANIMAL_NOMBRE)),
-            cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ANIMAL_RAZA)),
-            cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ANIMAL_SEXO)),
-            cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ANIMAL_FECHA_NACIMIENTO)),
-            cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ANIMAL_FECHA_INGRESO)),
-            cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ANIMAL_FECHA_SALIDA)),
-            cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ANIMAL_PRECIO_COMPRA)),
-            cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ANIMAL_PRECIO_VENTA)),
-            cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ANIMAL_FOTO)),
-            cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ANIMAL_ESTADO)),
-            cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ANIMAL_OBSERVACIONES))
-        );
+        Animal animal = new Animal();
+        animal.setId(cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ANIMAL_ID)));
+        animal.setNumeroArete(cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ANIMAL_ARETE)));
+        animal.setNombre(cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ANIMAL_NOMBRE)));
+        animal.setRaza(cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ANIMAL_RAZA)));
+        animal.setSexo(cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ANIMAL_SEXO)));
+        animal.setFechaNacimiento(cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ANIMAL_FECHA_NACIMIENTO)));
+        animal.setFechaIngreso(cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ANIMAL_FECHA_INGRESO)));
+        animal.setFechaSalida(cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ANIMAL_FECHA_SALIDA)));
+        animal.setPrecioCompra(cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ANIMAL_PRECIO_COMPRA)));
+        animal.setPrecioVenta(cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ANIMAL_PRECIO_VENTA)));
+        animal.setFoto(cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ANIMAL_FOTO)));
+        animal.setEstado(cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ANIMAL_ESTADO)));
+        animal.setObservaciones(cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ANIMAL_OBSERVACIONES)));
+        
+        // Campos de peso (pueden ser NULL en registros antiguos)
+        int pesoNacerIndex = cursor.getColumnIndex(DatabaseHelper.COL_ANIMAL_PESO_NACER);
+        int pesoActualIndex = cursor.getColumnIndex(DatabaseHelper.COL_ANIMAL_PESO_ACTUAL);
+        if (pesoNacerIndex != -1 && !cursor.isNull(pesoNacerIndex)) {
+            animal.setPesoNacer(cursor.getDouble(pesoNacerIndex));
+        }
+        if (pesoActualIndex != -1 && !cursor.isNull(pesoActualIndex)) {
+            animal.setPesoActual(cursor.getDouble(pesoActualIndex));
+        }
+        
+        return animal;
     }
 }
