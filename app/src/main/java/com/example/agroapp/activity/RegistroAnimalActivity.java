@@ -346,9 +346,9 @@ public class RegistroAnimalActivity extends BaseActivity implements AnimalPresen
         double precioCompra = 0;
         try {
             precioCompra = Double.parseDouble(precioStr);
-            if (precioCompra <= 0) {
-                Toast.makeText(this, "El precio de compra debe ser mayor a cero", Toast.LENGTH_SHORT).show();
-                etPrecioCompra.setError("Debe ser mayor a 0");
+            if (precioCompra < 0) {
+                Toast.makeText(this, "El precio de compra no puede ser negativo", Toast.LENGTH_SHORT).show();
+                etPrecioCompra.setError("No puede ser negativo");
                 etPrecioCompra.requestFocus();
                 return;
             }

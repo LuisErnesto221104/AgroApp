@@ -9,6 +9,10 @@ import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.agroapp.dao.UsuarioDAO;
+import com.example.agroapp.database.DatabaseHelper;
+import com.example.agroapp.models.Usuario;
+
 public class BaseActivity extends AppCompatActivity {
     
     private static final String TAG = "BaseActivity";
@@ -16,9 +20,13 @@ public class BaseActivity extends AppCompatActivity {
     private static final String KEY_LAST_ACTIVITY_TIME = "lastActivityTime";
     private static final long SESSION_TIMEOUT = 10000; // 10 segundos en milisegundos
     
+    private UsuarioDAO usuarioDAO;
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        DatabaseHelper dbHelper = DatabaseHelper.getInstance(this);
+        usuarioDAO = new UsuarioDAO(dbHelper);
     }
     
     @Override
@@ -87,14 +95,32 @@ public class BaseActivity extends AppCompatActivity {
                 return;
             }
             
+            // Obtener el username del usuario actual de la sesión
             SharedPreferences prefs = getSharedPreferences("AgroAppPrefs", MODE_PRIVATE);
-            String passwordGuardada = prefs.getString("password", "");
+            int userId = prefs.getInt("userId", -1);
             
-            Log.d(TAG, "Contraseña guardada existe: " + (!passwordGuardada.isEmpty()));
-            Log.d(TAG, "Longitud contraseña ingresada: " + password.length());
-            Log.d(TAG, "Longitud contraseña guardada: " + passwordGuardada.length());
+            if (userId == -1) {
+                Log.d(TAG, "No hay usuario en sesión");
+                volverAlLogin();
+                dialog.dismiss();
+                return;
+            }
             
-            if (password.equals(passwordGuardada)) {
+            // Validar contraseña contra la base de datos
+            Usuario usuario = usuarioDAO.obtenerPorId(userId);
+            
+            if (usuario == null) {
+                Log.d(TAG, "Usuario no encontrado en BD");
+                Toast.makeText(this, "Error: Usuario no encontrado", Toast.LENGTH_SHORT).show();
+                volverAlLogin();
+                dialog.dismiss();
+                return;
+            }
+            
+            Log.d(TAG, "Verificando contraseña para usuario: " + usuario.getUsername());
+            
+            // Comparar con la contraseña real de la base de datos
+            if (password.equals(usuario.getPassword())) {
                 // Contraseña correcta, actualizar tiempo y continuar
                 Log.d(TAG, "Contraseña correcta - reanudando sesión");
                 guardarTiempoActividad();
@@ -110,6 +136,13 @@ public class BaseActivity extends AppCompatActivity {
     }
     
     private void volverAlLogin() {
+        // Limpiar la sesión al volver al login
+        SharedPreferences prefs = getSharedPreferences("AgroAppPrefs", MODE_PRIVATE);
+        prefs.edit().clear().apply();
+        
+        SharedPreferences sessionPrefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        sessionPrefs.edit().clear().apply();
+        
         Intent intent = new Intent(this, LoginActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);

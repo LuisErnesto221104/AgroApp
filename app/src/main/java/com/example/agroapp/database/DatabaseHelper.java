@@ -7,7 +7,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class DatabaseHelper extends SQLiteOpenHelper {
     
     private static final String DATABASE_NAME = "AgroApp.db";
-    private static final int DATABASE_VERSION = 3;
+    private static final int DATABASE_VERSION = 4;
     
     // Tabla Usuarios
     public static final String TABLE_USUARIOS = "usuarios";
@@ -15,6 +15,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String COL_USUARIO_USERNAME = "username";
     public static final String COL_USUARIO_PASSWORD = "password";
     public static final String COL_USUARIO_NOMBRE = "nombre";
+    public static final String COL_USUARIO_ROL = "rol";
     
     // Tabla Animales
     public static final String TABLE_ANIMALES = "animales";
@@ -101,7 +102,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COL_USUARIO_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 COL_USUARIO_USERNAME + " TEXT UNIQUE NOT NULL, " +
                 COL_USUARIO_PASSWORD + " TEXT NOT NULL, " +
-                COL_USUARIO_NOMBRE + " TEXT NOT NULL)";
+                COL_USUARIO_NOMBRE + " TEXT NOT NULL, " +
+                COL_USUARIO_ROL + " TEXT NOT NULL DEFAULT 'USUARIO')";
         db.execSQL(createUsuarios);
         
         // Crear tabla Animales
@@ -182,12 +184,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 TABLE_ANIMALES + "(" + COL_ANIMAL_ID + ") ON DELETE CASCADE)";
         db.execSQL(createAlimentacion);
         
-        // Usuario por defecto del sistema (autogenerado en primera instalación)
-        // Credenciales: usuario='admin', contraseña='admin123', nombre='Administrador'
-        // Este usuario permite el acceso inicial antes de que se creen usuarios personalizados
+        // Usuario administrador por defecto del sistema
+        // Credenciales: usuario='admin', contraseña='admin123', rol='ADMIN'
+        // El usuario puede crear UN usuario adicional desde la app
         db.execSQL("INSERT INTO " + TABLE_USUARIOS + " (" + 
-                COL_USUARIO_USERNAME + ", " + COL_USUARIO_PASSWORD + ", " + COL_USUARIO_NOMBRE + 
-                ") VALUES ('admin', 'admin123', 'Administrador')");
+                COL_USUARIO_USERNAME + ", " + COL_USUARIO_PASSWORD + ", " + COL_USUARIO_NOMBRE + ", " + COL_USUARIO_ROL +
+                ") VALUES ('admin', 'admin123', 'Administrador', 'ADMIN')");
     }
     
     @Override
@@ -201,6 +203,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             // Migración de versión 2 a 3: agregar columnas de peso a animales
             db.execSQL("ALTER TABLE " + TABLE_ANIMALES + " ADD COLUMN " + COL_ANIMAL_PESO_NACER + " REAL");
             db.execSQL("ALTER TABLE " + TABLE_ANIMALES + " ADD COLUMN " + COL_ANIMAL_PESO_ACTUAL + " REAL");
+        }
+        if (oldVersion < 4) {
+            // Migración de versión 3 a 4: agregar columna rol a usuarios
+            db.execSQL("ALTER TABLE " + TABLE_USUARIOS + " ADD COLUMN " + COL_USUARIO_ROL + " TEXT NOT NULL DEFAULT 'USUARIO'");
+            // Actualizar el usuario admin existente con rol ADMIN
+            db.execSQL("UPDATE " + TABLE_USUARIOS + " SET " + COL_USUARIO_ROL + " = 'ADMIN' WHERE " + COL_USUARIO_USERNAME + " = 'admin'");
         }
     }
     

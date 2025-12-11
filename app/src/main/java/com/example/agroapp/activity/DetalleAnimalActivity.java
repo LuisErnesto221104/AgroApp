@@ -155,7 +155,7 @@ public class DetalleAnimalActivity extends BaseActivity {
             // Formula: Inversión Total = Precio de Compra + Total de Gastos
             // donde Total de Gastos incluye: alimentación, veterinario, medicinas, mantenimiento, etc.
             double precioCompra = animal.getPrecioCompra();
-            double totalGastos = gastoDAO.obtenerTotalGastosPorAnimal(animalId);
+            double totalGastos = gastoDAO.obtenerTotalGastosPorAnimal(animal.getId());
             double inversionTotal = precioCompra + totalGastos;
             
             tvInversionTotal.setText(currencyFormatter.format(inversionTotal));

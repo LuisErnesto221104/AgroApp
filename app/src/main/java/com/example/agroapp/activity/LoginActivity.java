@@ -82,14 +82,14 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
         
-        // Verificar si ya existe algún usuario en el sistema
-        if (usuarioDAO.existeAlgunUsuario()) {
-            Toast.makeText(this, "Ya existe un usuario registrado. Solo se permite un usuario en el sistema.", 
+        // Verificar si ya existe un usuario creado (además del admin)
+        if (usuarioDAO.existeUsuarioNormal()) {
+            Toast.makeText(this, "Ya existe un usuario registrado. Solo se permite 1 usuario adicional.", 
                     Toast.LENGTH_LONG).show();
             return;
         }
         
-        // Verificar si el usuario ya existe (redundante pero por seguridad)
+        // Verificar si el usuario ya existe
         Usuario usuarioExistente = usuarioDAO.obtenerPorUsername(username);
         
         if (usuarioExistente != null) {
@@ -99,6 +99,7 @@ public class LoginActivity extends AppCompatActivity {
         }
         
         // Crear nuevo usuario
+        // El primer usuario será ADMIN, el segundo será USUARIO (lógica en UsuarioDAO)
         Usuario nuevoUsuario = new Usuario();
         nuevoUsuario.setUsername(username);
         nuevoUsuario.setPassword(password);
@@ -118,6 +119,7 @@ public class LoginActivity extends AppCompatActivity {
     }
     
     private void guardarSesion(Usuario usuario, String password) {
+        // Guardar datos del usuario
         SharedPreferences prefs = getSharedPreferences("AgroAppPrefs", MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         editor.putBoolean("isLoggedIn", true);
@@ -125,6 +127,10 @@ public class LoginActivity extends AppCompatActivity {
         editor.putString("userName", usuario.getNombre());
         editor.putString("password", password);
         editor.apply();
+        
+        // Guardar tiempo de actividad para evitar que salte el diálogo de sesión expirada
+        SharedPreferences sessionPrefs = getSharedPreferences("SessionPrefs", MODE_PRIVATE);
+        sessionPrefs.edit().putLong("lastActivityTime", System.currentTimeMillis()).apply();
     }
     
     private void irAMainActivity() {
