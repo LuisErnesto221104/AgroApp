@@ -1,0 +1,169 @@
+@startuml CU-General-Sistema
+' =============================================================================
+' Diagrama General del Sistema - AgroApp
+' Sistema de Gestión Ganadera
+' Versión: 1.0
+' Estándar: UML 2.5
+' =============================================================================
+
+skinparam backgroundColor #FEFEFE
+skinparam actorBorderColor #41692a
+skinparam actorBackgroundColor #faf4de
+skinparam usecaseBorderColor #6d3e14
+skinparam usecaseBackgroundColor #faf4de
+skinparam packageBorderColor #c78f52
+skinparam packageBackgroundColor #ffffff
+skinparam arrowColor #6d3e14
+skinparam stereotypeCBackgroundColor #98a287
+
+title Diagrama General de Casos de Uso - AgroApp\nSistema de Gestión Ganadera
+
+' =============================================================================
+' ACTORES
+' =============================================================================
+
+actor "Productor Ganadero" as Productor <<Usuario Principal>>
+actor "Sistema de Notificaciones" as SistemaNot <<Sistema>>
+actor "Sistema de Almacenamiento" as SistemaAlm <<Sistema>>
+
+' =============================================================================
+' PAQUETE PRINCIPAL DEL SISTEMA
+' =============================================================================
+
+rectangle "Sistema AgroApp" {
+    
+    ' --- Módulo de Autenticación ---
+    package "Módulo Autenticación" as ModAuth #E8F5E9 {
+        usecase "CU-001:\nAutenticarse en\nel Sistema" as UC001
+    }
+    
+    ' --- Módulo de Gestión ---
+    package "Módulo Gestión de Animales" as ModGestion #FFF3E0 {
+        usecase "CU-002:\nGestionar Animales\n(CRUD)" as UC002
+    }
+    
+    ' --- Módulo Sanitario ---
+    package "Módulo Sanitario" as ModSanitario #E3F2FD {
+        usecase "CU-003:\nRegistrar Evento\nSanitario" as UC003
+        usecase "CU-004:\nGestionar Historial\nClínico" as UC004
+    }
+    
+    ' --- Módulo Financiero ---
+    package "Módulo Financiero" as ModFinanciero #FCE4EC {
+        usecase "CU-005:\nRegistrar Gastos\ne Inversiones" as UC005
+    }
+    
+    ' --- Módulo de Alimentación ---
+    package "Módulo Alimentación" as ModAlimentacion #F3E5F5 {
+        usecase "CU-006:\nConsultar\nAlimentación" as UC006
+    }
+    
+    ' --- Módulo de Reportes ---
+    package "Módulo Reportes" as ModReportes #E0F7FA {
+        usecase "CU-007:\nGenerar Reportes" as UC007
+    }
+    
+    ' --- Módulo de Notificaciones ---
+    package "Módulo Notificaciones" as ModNotif #FFF8E1 {
+        usecase "CU-008:\nGestionar\nNotificaciones" as UC008
+    }
+}
+
+' =============================================================================
+' RELACIONES ACTOR-CASO DE USO
+' =============================================================================
+
+' Productor Ganadero interactúa con todos los casos de uso principales
+Productor --> UC001
+Productor --> UC002
+Productor --> UC003
+Productor --> UC004
+Productor --> UC005
+Productor --> UC006
+Productor --> UC007
+Productor --> UC008
+
+' Sistema de Notificaciones
+SistemaNot --> UC008
+
+' Sistema de Almacenamiento
+UC002 --> SistemaAlm
+UC007 --> SistemaAlm
+
+' =============================================================================
+' RELACIONES ENTRE CASOS DE USO
+' =============================================================================
+
+' Dependencias de autenticación
+UC002 ..> UC001 : <<include>>
+UC003 ..> UC001 : <<include>>
+UC004 ..> UC001 : <<include>>
+UC005 ..> UC001 : <<include>>
+UC006 ..> UC001 : <<include>>
+UC007 ..> UC001 : <<include>>
+UC008 ..> UC001 : <<include>>
+
+' Dependencias de gestión de animales
+UC003 ..> UC002 : <<include>>
+UC004 ..> UC002 : <<include>>
+UC005 ..> UC002 : <<extend>>
+UC006 ..> UC002 : <<include>>
+
+' Dependencias de reportes
+UC007 ..> UC002 : <<include>>
+UC007 ..> UC005 : <<include>>
+
+' Notificaciones relacionadas con eventos sanitarios
+UC008 ..> UC003 : <<extend>>
+
+' =============================================================================
+' NOTAS
+' =============================================================================
+
+note right of UC001
+  **Precondición:**
+  - Usuario registrado en el sistema
+  
+  **Postcondición:**
+  - Sesión activa creada
+  - Acceso a funcionalidades
+end note
+
+note bottom of ModGestion
+  Operaciones CRUD completas:
+  - Crear animal
+  - Leer/Consultar animales
+  - Actualizar información
+  - Eliminar registro
+end note
+
+note right of ModSanitario
+  Control sanitario integral:
+  - Vacunas
+  - Desparasitación
+  - Vitaminas
+  - Tratamientos
+end note
+
+note bottom of ModReportes
+  Generación de reportes:
+  - Estadísticas del hato
+  - Reportes en PDF
+  - Exportación a Descargas
+end note
+
+' =============================================================================
+' LEYENDA
+' =============================================================================
+
+legend right
+  |= Símbolo |= Significado |
+  | ---> | Asociación |
+  | ..> <<include>> | Inclusión obligatoria |
+  | ..> <<extend>> | Extensión opcional |
+  | Rectángulo | Sistema |
+  | Paquete | Módulo funcional |
+  | Óvalo | Caso de Uso |
+endlegend
+
+@enduml
